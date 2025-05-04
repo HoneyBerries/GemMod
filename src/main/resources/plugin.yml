@@ -1,0 +1,21 @@
+name: GemMod
+version: '1.0.0'
+main: me.honeyberries.gemMod.GemMod
+api-version: '1.21.4'
+authors: [ HoneyBerries ]
+description: Plugin for the Gem SMP
+folia-supported: true
+commands:
+  gem:
+    description: Lets you give players gems
+    usage: /gem <gem-type> <player (optional)> <amount (optional)>
+    permission: gemmod.admin
+    permission-message: You do not have permission to use this command.
+
+permissions:
+    gemmod.admin:
+      description: Allows the player to use admin commands
+      default: op
+    gemmod.cooldown.bypass:
+      description: Allows the player to bypass cooldowns
+      default: false
