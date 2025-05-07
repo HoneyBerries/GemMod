@@ -3,7 +3,8 @@ package me.honeyberries.gemMod.listener;
 import me.honeyberries.gemMod.GemMod;
 import me.honeyberries.gemMod.manager.AbilityManager;
 import me.honeyberries.gemMod.manager.CooldownManager;
-import me.honeyberries.gemMod.manager.CooldownManager.GemType;
+import me.honeyberries.gemMod.manager.GemManager.GemType;
+import me.honeyberries.gemMod.manager.GemManager;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -14,6 +15,8 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.event.Event.Result;
 
+import java.util.logging.Level;
+
 /**
  * Listener that handles gem usage by players.
  * Processes right-click actions to trigger the associated gem ability.
@@ -22,8 +25,9 @@ public class GemUsageListener implements Listener {
 
     // Reference to the main plugin instance
     private final GemMod plugin = GemMod.getInstance();
+
     // Reference to the cooldown manager handling gem cooldowns
-    private final CooldownManager cooldownManager = plugin.getCooldownManager();
+    private final CooldownManager cooldownManager = CooldownManager.getInstance();
 
     /**
      * Processes player interactions to detect gem usage.
@@ -42,7 +46,7 @@ public class GemUsageListener implements Listener {
         // Retrieve player and the item in their main hand (potential gem).
         Player player = event.getPlayer();
         ItemStack mainItem = player.getInventory().getItemInMainHand();
-        GemType mainHandGem = cooldownManager.identifyGemType(mainItem);
+        GemType mainHandGem = GemManager.identifyGemType(mainItem);
 
         // Handle off-hand interactions: if main hand holds a gem, block off-hand use.
         if (event.getHand() == EquipmentSlot.OFF_HAND) {
@@ -73,6 +77,7 @@ public class GemUsageListener implements Listener {
                 AbilityManager.handleDarknessGemAbility(player);
                 break;
             default:
+                plugin.getLogger().log(Level.SEVERE, "Unknown gem type: " + mainHandGem);
                 player.sendMessage("Unknown gem type!");
         }
     }

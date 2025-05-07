@@ -1,6 +1,7 @@
 package me.honeyberries.gemMod.command;
 
-import me.honeyberries.gemMod.manager.GemCreationManager;
+import me.honeyberries.gemMod.manager.GemManager.GemType;
+import me.honeyberries.gemMod.manager.GemManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
@@ -80,31 +81,31 @@ public class GemCommand implements TabExecutor {
         // Process gem giving based on the gem type.
         switch (gemType) {
             case "air" -> {
-                target.getInventory().addItem(GemCreationManager.createAirGem(amount));
+                target.getInventory().addItem(GemManager.createGem(GemType.AIR, amount));
                 sender.sendMessage(Component.text(String.format("Given %d Air Gem(s) to %s", amount, target.getName()), NamedTextColor.GREEN));
             }
             case "darkness" -> {
-                target.getInventory().addItem(GemCreationManager.createDarknessGem(amount));
+                target.getInventory().addItem(GemManager.createGem(GemType.DARKNESS, amount));
                 sender.sendMessage(Component.text(String.format("Given %d Darkness Gem(s) to %s", amount, target.getName()), NamedTextColor.GREEN));
             }
             case "earth" -> {
-                target.getInventory().addItem(GemCreationManager.createEarthGem(amount));
+                target.getInventory().addItem(GemManager.createGem(GemType.EARTH, amount));
                 sender.sendMessage(Component.text(String.format("Given %d Earth Gem(s) to %s", amount, target.getName()), NamedTextColor.GREEN));
             }
             case "fire" -> {
-                target.getInventory().addItem(GemCreationManager.createFireGem(amount));
+                target.getInventory().addItem(GemManager.createGem(GemType.FIRE, amount));
                 sender.sendMessage(Component.text(String.format("Given %d Fire Gem(s) to %s", amount, target.getName()), NamedTextColor.GREEN));
             }
             case "ice" -> {
-                target.getInventory().addItem(GemCreationManager.createIceGem(amount));
+                target.getInventory().addItem(GemManager.createGem(GemType.ICE, amount));
                 sender.sendMessage(Component.text(String.format("Given %d Ice Gem(s) to %s", amount, target.getName()), NamedTextColor.GREEN));
             }
             case "light" -> {
-                target.getInventory().addItem(GemCreationManager.createLightGem(amount));
+                target.getInventory().addItem(GemManager.createGem(GemType.LIGHT, amount));
                 sender.sendMessage(Component.text(String.format("Given %d Light Gem(s) to %s", amount, target.getName()), NamedTextColor.GREEN));
             }
             case "water" -> {
-                target.getInventory().addItem(GemCreationManager.createWaterGem(amount));
+                target.getInventory().addItem(GemManager.createGem(GemType.WATER, amount));
                 sender.sendMessage(Component.text(String.format("Given %d Water Gem(s) to %s", amount, target.getName()), NamedTextColor.GREEN));
             }
             default -> {

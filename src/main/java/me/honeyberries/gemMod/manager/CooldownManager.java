@@ -6,12 +6,13 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static me.honeyberries.gemMod.manager.GemManager.identifyGemType;
+import me.honeyberries.gemMod.manager.GemManager.GemType;
 
 /**
  * Manages all gem cooldowns and updates the player's action bar with cooldown information.
@@ -19,18 +20,6 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class CooldownManager {
 
-    /**
-     * Enum representing available gem types.
-     */
-    public enum GemType {
-        AIR,
-        DARKNESS,
-        EARTH,
-        FIRE,
-        ICE,
-        LIGHT,
-        WATER
-    }
 
     /** Singleton instance */
     private static final CooldownManager INSTANCE = new CooldownManager();
@@ -47,60 +36,6 @@ public class CooldownManager {
      * Stores scheduled tasks for updating action bars.
      */
     private final Map<UUID, ScheduledTask> actionBarTasks = new ConcurrentHashMap<>();
-
-    /**
-     * Determines the gem type for a given item.
-     *
-     * @param item the item to identify
-     * @return the GemType if found; null otherwise
-     */
-    public @Nullable GemType identifyGemType(@Nullable ItemStack item) {
-        if (item == null) {
-            return null;
-        }
-        return switch (item) {
-            case ItemStack ignored when item.isSimilar(GemCreationManager.createAirGem(1)) -> GemType.AIR;
-            case ItemStack ignored when item.isSimilar(GemCreationManager.createDarknessGem(1)) -> GemType.DARKNESS;
-            case ItemStack ignored when item.isSimilar(GemCreationManager.createEarthGem(1)) -> GemType.EARTH;
-            case ItemStack ignored when item.isSimilar(GemCreationManager.createFireGem(1)) -> GemType.FIRE;
-            case ItemStack ignored when item.isSimilar(GemCreationManager.createIceGem(1)) -> GemType.ICE;
-            case ItemStack ignored when item.isSimilar(GemCreationManager.createLightGem(1)) -> GemType.LIGHT;
-            case ItemStack ignored when item.isSimilar(GemCreationManager.createWaterGem(1)) -> GemType.WATER;
-            default -> null;
-        };
-    }
-
-    /**
-     * Checks if a player has at least one gem of the specified type in their inventory.
-     *
-     * @param player the player to check
-     * @param gemType the gem type to look for
-     * @return true if the gem exists; false otherwise
-     */
-    public boolean hasGem(Player player, GemType gemType) {
-        ItemStack gemItem = switch (gemType) {
-            case AIR -> GemCreationManager.createAirGem(1);
-            case DARKNESS -> GemCreationManager.createDarknessGem(1);
-            case EARTH -> GemCreationManager.createEarthGem(1);
-            case FIRE -> GemCreationManager.createFireGem(1);
-            case ICE -> GemCreationManager.createIceGem(1);
-            case LIGHT -> GemCreationManager.createLightGem(1);
-            case WATER -> GemCreationManager.createWaterGem(1);
-        };
-        return player.getInventory().containsAtLeast(gemItem, 1);
-    }
-
-    /**
-     * Checks if the player is holding the specified gem in their main hand.
-     *
-     * @param player the player to check
-     * @param gemType the gem type being checked
-     * @return true if the item matches the gem type; false otherwise
-     */
-    public boolean isHoldingGem(@NotNull Player player, @NotNull GemType gemType) {
-        ItemStack heldItem = player.getInventory().getItemInMainHand();
-        return identifyGemType(heldItem) == gemType;
-    }
 
     /**
      * Returns the singleton instance of the CooldownManager.
@@ -126,19 +61,6 @@ public class CooldownManager {
         if (showActionBar) {
             showCooldownActionBar(player);
         }
-    }
-
-    /**
-     * Deprecated: Sets a cooldown and shows the action bar.
-     *
-     * @param player the player to set the cooldown for
-     * @param gemType the gem type concerned
-     * @param durationMillis cooldown duration in milliseconds
-     * @deprecated Use {@link #setCooldown(Player, GemType, long, boolean)} instead.
-     */
-    @Deprecated
-    public void setCooldown(Player player, GemType gemType, long durationMillis) {
-        setCooldown(player, gemType, durationMillis, true);
     }
 
     /**
