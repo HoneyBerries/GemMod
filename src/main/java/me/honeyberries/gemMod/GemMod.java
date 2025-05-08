@@ -1,10 +1,8 @@
 package me.honeyberries.gemMod;
 
 import me.honeyberries.gemMod.command.GemCommand;
-import me.honeyberries.gemMod.listener.AirGemListener;
-import me.honeyberries.gemMod.listener.DarknessGemListener;
-import me.honeyberries.gemMod.listener.GemUsageListener;
-import me.honeyberries.gemMod.listener.HotbarSwitchCooldownListener;
+import me.honeyberries.gemMod.listener.*;
+import me.honeyberries.gemMod.task.EarthGemTask;
 import org.bukkit.plugin.java.JavaPlugin;
 import java.util.Objects;
 
@@ -20,41 +18,56 @@ public final class GemMod extends JavaPlugin {
      */
     @Override
     public void onEnable() {
-        // Plugin startup logic; logging plugin start
         getLogger().info("GemMod has been enabled!");
-        
-        // Register the /gem command for development and testing
+        // Initialize managers and other components
+
+        // Register commands
+        registerCommands();
+        // Register event listeners
+        registerEventListeners();
+        // Register recurring tasks
+        scheduleTasks();
+    }
+
+    /**
+     * Registers all plugin commands
+     */
+    private void registerCommands() {
+        // Register the /gem command with the GemCommand executor
         Objects.requireNonNull(getCommand("gem")).setExecutor(new GemCommand());
+    }
 
-
-        // Register the hotbar switch cooldown listener
+    /**
+     * Registers all event listeners
+     */
+    private void registerEventListeners() {
+        // Register general listeners
         getServer().getPluginManager().registerEvents(new HotbarSwitchCooldownListener(), this);
-
-        // Register the gem usage listener for handling gem abilities
         getServer().getPluginManager().registerEvents(new GemUsageListener(), this);
 
-
-        // Register the Air Gem listener for fall damage cancellation
+        // Register gem-specific listeners
         getServer().getPluginManager().registerEvents(new AirGemListener(), this);
-
-        // Register the Darkness Gem listener for blindness effect and particles
         getServer().getPluginManager().registerEvents(new DarknessGemListener(), this);
+        getServer().getPluginManager().registerEvents(new EarthGemListener(), this);
+    }
 
+    /**
+     * Schedules all recurring tasks
+     */
+    private void scheduleTasks() {
+        // Schedule the EarthGemTask to run every tick
+        getServer().getGlobalRegionScheduler().run(this, new EarthGemTask());
     }
 
     /**
      * Called when the plugin is disabled.
-     * Logs the shutdown and cancels any running tasks.
+     * Logs the shutdown and cancel any running tasks.
      */
     @Override
     public void onDisable() {
-        // Plugin shutdown logic; logging plugin stop
-        getLogger().info("GemMod has been disabled!");
-
-        // Ensure all scheduled tasks are canceled to prevent memory leaks
+        getLogger().info("GemMod has been disabled! Bye!");
         getServer().getGlobalRegionScheduler().cancelTasks(this);
     }
-
 
     /**
      * Retrieves the singleton instance of the GemMod plugin.
@@ -64,5 +77,4 @@ public final class GemMod extends JavaPlugin {
     public static GemMod getInstance() {
         return getPlugin(GemMod.class);
     }
-
 }

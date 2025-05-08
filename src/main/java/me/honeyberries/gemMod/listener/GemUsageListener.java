@@ -76,6 +76,9 @@ public class GemUsageListener implements Listener {
             case DARKNESS:
                 AbilityManager.handleDarknessGemAbility(player);
                 break;
+            case EARTH:
+                AbilityManager.handleEarthGemAbility(player);
+                break;
             default:
                 plugin.getLogger().log(Level.SEVERE, "Unknown gem type: " + mainHandGem);
                 player.sendMessage("Unknown gem type!");

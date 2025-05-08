@@ -25,9 +25,12 @@ public class AbilityManager {
     // Duration of cooldown constants
     private static final long AIR_COOLDOWN_MILLIS = 30_000; // 30 seconds
     private static final long DARKNESS_COOLDOWN_MILLIS = 75_000; // 75 seconds
+    private static final long EARTH_COOLDOWN_MILLIS = 70_000; // 70 seconds
 
     // Duration of ability effects
     private static final int INVISIBILITY_DURATION_TICKS = 15 * 20; // 15 seconds in ticks
+    private static final int INVULNERABILITY_DURATION_TICKS = 10 * 20; // 10 seconds in ticks
+
 
     /**
      * Triggers the Air Gem ability, providing the player with a velocity boost.
@@ -130,4 +133,33 @@ public class AbilityManager {
         player.getWorld().playSound(player.getLocation(), Sound.BLOCK_GRINDSTONE_USE, 1.0f, 1.0f);
         player.sendMessage(Component.text(String.format("You are now Invisible for %d seconds!", INVISIBILITY_DURATION_TICKS / 20), NamedTextColor.DARK_PURPLE));
     }
+
+
+    /**
+     * Triggers the Earth Gem ability to grant temporary invulnerability.
+     *
+     * @param player the player using the Earth Gem
+     */
+    public static void handleEarthGemAbility(Player player) {
+        long remainingCooldown = cooldownManager.getRemainingCooldown(player, GemType.EARTH);
+        if (remainingCooldown > 0) {
+            long secondsLeft = remainingCooldown / 1000;
+
+            // Check if the player has permission to bypass cooldown
+            if (!player.hasPermission("gemmod.cooldown.bypass")) {
+                player.sendMessage(Component.text(String.format("Damage Resistance is on cooldown! %ds left.", secondsLeft), NamedTextColor.RED));
+                player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+                return;
+            }
+        }
+
+
+        // Set cooldown for Earth Gem usage
+        cooldownManager.setCooldown(player, GemType.EARTH, EARTH_COOLDOWN_MILLIS, true);
+
+        // Provide feedback to the player
+        player.getWorld().playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f);
+        player.sendMessage(Component.text(String.format("You are now invulnerable for %d seconds!", INVULNERABILITY_DURATION_TICKS / 20), NamedTextColor.GREEN));
+    }
+
 }

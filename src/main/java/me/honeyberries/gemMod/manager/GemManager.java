@@ -88,98 +88,89 @@ public class GemManager {
      * @return an ItemStack representing the customized gem
      */
     public static ItemStack createGem(GemType gemType, int amount) {
-        // Initialize item as a diamond (can be changed to a different material if desired)
         ItemStack gemItemStack = new ItemStack(Material.DIAMOND, amount);
         ItemMeta gemItemMeta = Objects.requireNonNull(gemItemStack.getItemMeta());
 
-        // Configure properties based on the gem type
+        String customModelKey = null;
+
         switch (gemType) {
             case AIR -> {
                 gemItemMeta.itemName(Component.text("Aero Gem").color(NamedTextColor.AQUA));
-                List<Component> lore = List.of(
+                gemItemMeta.lore(List.of(
                         Component.text("Gem of the Air Elemental"),
                         Component.text("Grants the power of wind and air manipulation."),
                         Component.text("Can be used to create powerful wind spells.")
-                );
-                gemItemMeta.lore(lore);
-                // Assign custom model data for specific rendering
-                CustomModelData customModelData = CustomModelData.customModelData().addString("airgem").build();
-                gemItemStack.setData(DataComponentTypes.CUSTOM_MODEL_DATA, customModelData);
+                ));
+                customModelKey = "airgem";
             }
             case DARKNESS -> {
                 gemItemMeta.itemName(Component.text("Shadow Gem").color(NamedTextColor.DARK_PURPLE));
-                List<Component> lore = List.of(
+                gemItemMeta.lore(List.of(
                         Component.text("Gem of the Dark Elemental"),
                         Component.text("Grants the power of darkness to its wielder."),
                         Component.text("Can be used to create powerful shadow-based spells.")
-                );
-                gemItemMeta.lore(lore);
-                CustomModelData customModelData = CustomModelData.customModelData().addString("darknessgem").build();
-                gemItemStack.setData(DataComponentTypes.CUSTOM_MODEL_DATA, customModelData);
+                ));
+                customModelKey = "darknessgem";
             }
             case EARTH -> {
                 gemItemMeta.itemName(Component.text("Dendro Gem").color(NamedTextColor.GREEN));
-                List<Component> lore = List.of(
+                gemItemMeta.lore(List.of(
                         Component.text("Gem of the Nature Elemental"),
                         Component.text("Grants the power of nature to its wielder."),
-                        Component.text("Can be used to create powerful plant-based spells.")
-                );
-                gemItemMeta.lore(lore);
-                CustomModelData customModelData = CustomModelData.customModelData().addString("earthgem").build();
-                gemItemStack.setData(DataComponentTypes.CUSTOM_MODEL_DATA, customModelData);
+                        Component.text("Can be used to prevent damage and mine faster.")
+                ));
+                customModelKey = "earthgem";
             }
             case FIRE -> {
                 gemItemMeta.itemName(Component.text("Pyro Gem").color(NamedTextColor.RED));
-                List<Component> lore = List.of(
+                gemItemMeta.lore(List.of(
                         Component.text("Gem of the Fire Elemental"),
                         Component.text("Grants the power of fire to its wielder."),
                         Component.text("Can be used to create powerful fire-based spells.")
-                );
-                gemItemMeta.lore(lore);
-                CustomModelData customModelData = CustomModelData.customModelData().addString("firegem").build();
-                gemItemStack.setData(DataComponentTypes.CUSTOM_MODEL_DATA, customModelData);
+                ));
+                customModelKey = "firegem";
             }
             case ICE -> {
                 gemItemMeta.itemName(Component.text("Cryo Gem").color(NamedTextColor.AQUA));
-                List<Component> lore = List.of(
+                gemItemMeta.lore(List.of(
                         Component.text("Gem of the Ice Elemental"),
                         Component.text("Grants the power of frost to its wielder."),
                         Component.text("Can be used to create powerful ice-based spells.")
-                );
-                gemItemMeta.lore(lore);
-                CustomModelData customModelData = CustomModelData.customModelData().addString("icegem").build();
-                gemItemStack.setData(DataComponentTypes.CUSTOM_MODEL_DATA, customModelData);
+                ));
+                customModelKey = "icegem";
             }
             case LIGHT -> {
                 gemItemMeta.itemName(Component.text("Photo Gem").color(NamedTextColor.YELLOW));
-                List<Component> lore = List.of(
+                gemItemMeta.lore(List.of(
                         Component.text("Gem of the Light Elemental"),
                         Component.text("Grants the power of light to its wielder."),
                         Component.text("Can be used to create powerful light-based spells.")
-                );
-                gemItemMeta.lore(lore);
-                CustomModelData customModelData = CustomModelData.customModelData().addString("lightgem").build();
-                gemItemStack.setData(DataComponentTypes.CUSTOM_MODEL_DATA, customModelData);
+                ));
+                customModelKey = "lightgem";
             }
             case WATER -> {
                 gemItemMeta.itemName(Component.text("Hydro Gem").color(NamedTextColor.BLUE));
-                List<Component> lore = List.of(
+                gemItemMeta.lore(List.of(
                         Component.text("Gem of the Water Elemental"),
                         Component.text("Grants the power of water to its wielder."),
                         Component.text("Can be used to create powerful water-based spells.")
-                );
-                gemItemMeta.lore(lore);
-                CustomModelData customModelData = CustomModelData.customModelData().addString("watergem").build();
-                gemItemStack.setData(DataComponentTypes.CUSTOM_MODEL_DATA, customModelData);
+                ));
+                customModelKey = "watergem";
             }
         }
 
-        // Add an enchantment for visual effect and hide it for aesthetic purposes
         gemItemMeta.addEnchant(Enchantment.MENDING, 1, true);
         gemItemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
 
-        // Apply the meta data to the item
+        // Apply the meta data FIRST
         gemItemStack.setItemMeta(gemItemMeta);
+
+        // Only now, set the data component (after setItemMeta)
+        if (customModelKey != null) {
+            CustomModelData customModelData = CustomModelData.customModelData().addString(customModelKey).build();
+            gemItemStack.setData(DataComponentTypes.CUSTOM_MODEL_DATA, customModelData);
+        }
+
 
         return gemItemStack;
     }
