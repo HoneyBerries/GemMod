@@ -2,7 +2,7 @@ package me.honeyberries.gemMod;
 
 import me.honeyberries.gemMod.command.GemCommand;
 import me.honeyberries.gemMod.listener.*;
-import me.honeyberries.gemMod.task.EarthGemTask;
+import me.honeyberries.gemMod.task.*;
 import org.bukkit.plugin.java.JavaPlugin;
 import java.util.Objects;
 
@@ -57,6 +57,8 @@ public final class GemMod extends JavaPlugin {
     private void scheduleTasks() {
         // Schedule the EarthGemTask to run every tick
         EarthGemTask.startEarthGemTask();
+        // Schedule the FireGemTask to run every tick
+        FireGemTask.startFireGemTask();
     }
 
     /**

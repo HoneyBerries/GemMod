@@ -4,8 +4,10 @@ import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import me.honeyberries.gemMod.GemMod;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
+import org.bukkit.entity.Fireball;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.potion.PotionEffect;
@@ -26,6 +28,7 @@ public class AbilityManager {
     private static final long AIR_COOLDOWN_MILLIS = 30_000; // 30 seconds
     private static final long DARKNESS_COOLDOWN_MILLIS = 75_000; // 75 seconds
     private static final long EARTH_COOLDOWN_MILLIS = 70_000; // 70 seconds
+    private static final long FIREBALL_COOLDOWN_MILLIS = 30_000; // 30 seconds
 
     // Duration of ability effects
     private static final int INVISIBILITY_DURATION_TICKS = 15 * 20; // 15 seconds in ticks
@@ -59,7 +62,7 @@ public class AbilityManager {
         // Set cooldown and provide feedback
         cooldownManager.setCooldown(player, GemType.AIR, AIR_COOLDOWN_MILLIS, true);
         player.getWorld().playSound(player.getLocation(), Sound.ENTITY_WIND_CHARGE_THROW, 1.0f, 1.0f);
-        player.sendMessage(Component.text("You used the Double Jump!", NamedTextColor.AQUA));
+        player.sendMessage(Component.text("You used the Double Jump!", TextColor.fromHexString("#90e1e1")));
     }
 
     /**
@@ -131,7 +134,7 @@ public class AbilityManager {
 
         // Notify the player that the ability is active
         player.getWorld().playSound(player.getLocation(), Sound.BLOCK_GRINDSTONE_USE, 1.0f, 1.0f);
-        player.sendMessage(Component.text(String.format("You are now Invisible for %d seconds!", INVISIBILITY_DURATION_TICKS / 20), NamedTextColor.DARK_PURPLE));
+        player.sendMessage(Component.text(String.format("You are now Invisible for %d seconds!", INVISIBILITY_DURATION_TICKS / 20), TextColor.fromHexString("#231e5e")));
     }
 
 
@@ -147,7 +150,7 @@ public class AbilityManager {
 
             // Check if the player has permission to bypass cooldown
             if (!player.hasPermission("gemmod.cooldown.bypass")) {
-                player.sendMessage(Component.text(String.format("Damage Resistance is on cooldown! %ds left.", secondsLeft), NamedTextColor.RED));
+                player.sendMessage(Component.text(String.format("Damage Resistance is on cooldown! %ds left.", secondsLeft)).color(NamedTextColor.RED));
                 player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
                 return;
             }
@@ -163,7 +166,38 @@ public class AbilityManager {
 
         // Provide feedback to the player
         player.getWorld().playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f);
-        player.sendMessage(Component.text(String.format("You are now invulnerable for %d seconds!", INVULNERABILITY_DURATION_TICKS / 20), NamedTextColor.GREEN));
+        player.sendMessage(Component.text(String.format("You are now invulnerable for %d seconds!", INVULNERABILITY_DURATION_TICKS / 20), TextColor.fromHexString("#3ad422")));
     }
+
+
+    public static void handleFireGemAbility(Player player) {
+        long remainingCooldown = cooldownManager.getRemainingCooldown(player, GemType.FIRE);
+        if (remainingCooldown > 0) {
+            long secondsLeft = remainingCooldown / 1000;
+
+            // Check if the player has permission to bypass cooldown
+            if (!player.hasPermission("gemmod.cooldown.bypass")) {
+                player.sendMessage(Component.text(String.format("Fireball is on cooldown! %ds left.", secondsLeft), NamedTextColor.RED));
+                player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+                return;
+            }
+        }
+
+        // Fireball logic here
+
+        // Create a fireball entity and launch it
+        Fireball fireball = player.launchProjectile(Fireball.class, player.getLocation().getDirection().multiply(2));
+        fireball.setIsIncendiary(true);
+        fireball.setYield(4F); // Adjust explosion power as needed
+
+
+        // Set cooldown for Fire Gem usage
+        cooldownManager.setCooldown(player, GemType.FIRE, FIREBALL_COOLDOWN_MILLIS, true);
+
+        // Provide feedback to the player
+        player.getWorld().playSound(player.getLocation(), Sound.ENTITY_FIREWORK_ROCKET_LAUNCH, 1.0f, 1.0f);
+        player.sendMessage(Component.text("You threw a Fireball!").color(TextColor.fromHexString("#f0590e")));
+    }
+
 
 }
