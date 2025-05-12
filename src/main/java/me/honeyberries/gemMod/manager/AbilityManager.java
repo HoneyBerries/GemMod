@@ -153,6 +153,10 @@ public class AbilityManager {
             }
         }
 
+        // Give resistance 255
+        player.getScheduler().run(plugin, scheduledTask -> {
+            player.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE, INVULNERABILITY_DURATION_TICKS, 254, false, true, true));
+        }, null);
 
         // Set cooldown for Earth Gem usage
         cooldownManager.setCooldown(player, GemType.EARTH, EARTH_COOLDOWN_MILLIS, true);

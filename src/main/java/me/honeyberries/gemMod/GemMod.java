@@ -48,7 +48,7 @@ public final class GemMod extends JavaPlugin {
         // Register gem-specific listeners
         getServer().getPluginManager().registerEvents(new AirGemListener(), this);
         getServer().getPluginManager().registerEvents(new DarknessGemListener(), this);
-        getServer().getPluginManager().registerEvents(new EarthGemListener(), this);
+
     }
 
     /**
@@ -56,7 +56,7 @@ public final class GemMod extends JavaPlugin {
      */
     private void scheduleTasks() {
         // Schedule the EarthGemTask to run every tick
-        getServer().getGlobalRegionScheduler().run(this, new EarthGemTask());
+        EarthGemTask.startEarthGemTask();
     }
 
     /**
