@@ -54,7 +54,7 @@ public class AbilityManager {
         }
 
         // Calculate boost vector (upward and forward)
-        double boostSpeed = 3.0; // Adjust strength as needed
+        double boostSpeed = 5.0; // Adjust strength as needed
         Vector direction = player.getLocation().getDirection().normalize();
         Vector velocity = direction.multiply(boostSpeed);
         player.setVelocity(velocity);
