@@ -1,5 +1,5 @@
 name: GemMod
-version: '1.0.0'
+version: '1.0'
 main: me.honeyberries.gemMod.GemMod
 api-version: '1.21.4'
 authors: [ HoneyBerries ]
@@ -9,13 +9,19 @@ commands:
   gem:
     description: Lets you give players gems
     usage: /gem <gem-type> <player (optional)> <amount (optional)>
-    permission: gemmod.admin
+    permission: gemmod.command
     permission-message: You do not have permission to use this command.
 
 permissions:
-    gemmod.admin:
-      description: Allows the player to use admin commands
-      default: op
+    gemmod.command:
+        description: Allows the player to use the /gem command
+        default: op
     gemmod.cooldown.bypass:
       description: Allows the player to bypass cooldowns
       default: false
+    gemmod.admin:
+      description: Gives the player access to all admin functions
+      default: op
+      children:
+        - gemmod.command
+        - gemmod.cooldown.bypass
