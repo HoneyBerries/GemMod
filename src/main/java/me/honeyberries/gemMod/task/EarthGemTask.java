@@ -52,7 +52,7 @@ public class EarthGemTask {
         plugin.getServer().getGlobalRegionScheduler().runAtFixedRate(plugin, scheduledTask -> {
             Bukkit.getOnlinePlayers().forEach(player -> {
                 if (GemManager.hasGem(player, GemType.EARTH)) {
-                    applyHasteAndSpeedEffect(player);
+                    applyEarthPotionEffect(player);
                 }
             });
         }, 1, 1); // Run every tick (1 tick delay, 1 tick interval)
