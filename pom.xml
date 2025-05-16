@@ -6,7 +6,7 @@
 
     <groupId>me.honeyberries</groupId>
     <artifactId>gemmod</artifactId>
-    <version>1.0.0</version>
+    <version>1.0</version>
     <packaging>jar</packaging>
 
     <name>gemmod</name>
@@ -38,11 +38,24 @@
                         <goals>
                             <goal>shade</goal>
                         </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.5.3</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
                         <configuration>
                             <relocations>
                                 <relocation>
-                                    <pattern>com.comphenix.protocol</pattern>
-                                    <shadedPattern>me.honeyberries.shade.protocollib</shadedPattern>
+                                    <pattern>com.github.retrooper.packetevents</pattern>
+                                    <shadedPattern>me.honeyberries.gemMod.shaded.packetevents</shadedPattern>
                                 </relocation>
                             </relocations>
                         </configuration>
@@ -68,11 +81,14 @@
             <url>https://oss.sonatype.org/content/groups/public/</url>
         </repository>
         <repository>
-            <id>dmulloy2-repo</id>
-            <url>https://repo.dmulloy2.net/repository/public/</url>
+            <id>codemc-releases</id>
+            <url>https://repo.codemc.io/repository/maven-releases/</url>
+        </repository>
+        <repository>
+            <id>codemc-snapshots</id>
+            <url>https://repo.codemc.io/repository/maven-snapshots/</url>
         </repository>
     </repositories>
-
     <dependencies>
         <dependency>
             <groupId>io.papermc.paper</groupId>
@@ -81,9 +97,9 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>com.comphenix.protocol</groupId>
-            <artifactId>ProtocolLib</artifactId>
-            <version>5.3.0</version>
+            <groupId>com.github.retrooper</groupId>
+            <artifactId>packetevents-spigot</artifactId>
+            <version>2.7.0</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>
