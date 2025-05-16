@@ -30,11 +30,11 @@ public class EarthGemTask {
     /** Reference to the main plugin instance. */
     private static final Plugin plugin = GemMod.getInstance();
 
-    /** Duration of the Haste effect in ticks (15 seconds). */
-    private static final int HASTE_DURATION_TICKS = 15 * 20;
+    /** Duration of the potion effect in ticks (15 seconds). */
+    private static final int POTION_DURATION_TICKS = 15 * 20;
 
-    /** Amplifier for the Haste effect (level 2). */
-    private static final int HASTE_AMPLIFIER = 1;
+    /** Amplifier for the potion effect (level 2). */
+    private static final int POTION_AMPLIFIER = 1;
 
     /**
      * Starts the Earth Gem passive effect recurring task.
@@ -66,10 +66,13 @@ public class EarthGemTask {
     private static void applyHasteAndSpeedEffect(Player player) {
         player.getScheduler().run(plugin, scheduledPlayerTask -> {
             player.addPotionEffect(new PotionEffect(
-                PotionEffectType.HASTE, HASTE_DURATION_TICKS, HASTE_AMPLIFIER, true, false, true
+                PotionEffectType.HASTE, POTION_DURATION_TICKS, POTION_AMPLIFIER, true, false, true
             ));
             player.addPotionEffect(new PotionEffect(
-                PotionEffectType.SPEED, HASTE_DURATION_TICKS, HASTE_AMPLIFIER, true, false, true
+                PotionEffectType.SPEED, POTION_DURATION_TICKS, POTION_AMPLIFIER, true, false, true
+            ));
+            player.addPotionEffect(new PotionEffect(
+                PotionEffectType.STRENGTH, POTION_DURATION_TICKS, POTION_AMPLIFIER, true, false, true
             ));
 
         }, null);
