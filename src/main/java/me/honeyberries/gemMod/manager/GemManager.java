@@ -3,7 +3,6 @@ package me.honeyberries.gemMod.manager;
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.CustomModelData;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -15,6 +14,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Objects;
+import net.kyori.adventure.text.format.TextColor;
 
 /**
  * <b>GemManager</b> is a utility class for creating and managing custom gem items with specific properties.
@@ -102,71 +102,64 @@ public class GemManager {
         // <i>Set gem name, lore, and custom model key based on type</i>
         switch (gemType) {
             case AIR -> {
-                gemItemMeta.itemName(Component.text("Aero Gem").color(NamedTextColor.AQUA));
+                gemItemMeta.itemName(Component.text("Aero Gem").color(TextColor.fromHexString("#f7ded1")));
                 gemItemMeta.lore(List.of(
-                        Component.text("Gem of the Air Elemental"),
-                        Component.text("Grants the power of wind and air manipulation."),
-                        Component.text("Can be used to create powerful wind spells.")
+                        Component.text("Grants Speed II and Slow Falling.").color(TextColor.fromHexString("#ddfff8")),
+                        Component.text("Right-click to release a gust of wind.").color(TextColor.fromHexString("#e7e3ff"))
                 ));
                 customModelKey = "airgem";
             }
             case DARKNESS -> {
-                gemItemMeta.itemName(Component.text("Shadow Gem").color(NamedTextColor.DARK_PURPLE));
+                gemItemMeta.itemName(Component.text("Shadow Gem").color(TextColor.fromHexString("#3c2c90")));
                 gemItemMeta.lore(List.of(
-                        Component.text("Gem of the Dark Elemental"),
-                        Component.text("Grants the power of darkness to its wielder."),
-                        Component.text("Can be used to create powerful shadow-based spells.")
+                        Component.text("Become truly invisible, not showing armor or items.").color(TextColor.fromHexString("#1b46cb")),
+                        Component.text("Give players darkness and cover up their screens with shadow particles.").color(TextColor.fromHexString("#542285"))
                 ));
                 customModelKey = "darknessgem";
             }
             case EARTH -> {
-                gemItemMeta.itemName(Component.text("Dendro Gem").color(NamedTextColor.GREEN));
+                gemItemMeta.itemName(Component.text("Dendro Gem").color(TextColor.fromHexString("#3fd41e")));
                 gemItemMeta.lore(List.of(
-                        Component.text("Gem of the Nature Elemental"),
-                        Component.text("Grants the power of nature to its wielder."),
-                        Component.text("Can be used to prevent damage and mine faster.")
+                        Component.text("Provides Haste II, Speed II, and Strength II.").color(TextColor.fromHexString("#4cd69b")),
+                        Component.text("This ability negates damage for a short period of time.").color(TextColor.fromHexString("#72d132"))
                 ));
                 customModelKey = "earthgem";
             }
             case FIRE -> {
-                gemItemMeta.itemName(Component.text("Pyro Gem").color(NamedTextColor.RED));
+                gemItemMeta.itemName(Component.text("Pyro Gem").color(TextColor.fromHexString("#ff6a2b")));
                 gemItemMeta.lore(List.of(
-                        Component.text("Gem of the Fire Elemental"),
-                        Component.text("Grants the power of fire to its wielder."),
-                        Component.text("Can be used to create powerful fire-based spells.")
+                        Component.text("Grants Fire Resistance.").color(TextColor.fromHexString("#dc4772")),
+                        Component.text("Use the gem to launch a fireball.").color(TextColor.fromHexString("#ee3d24"))
                 ));
                 customModelKey = "firegem";
             }
             case ICE -> {
-                gemItemMeta.itemName(Component.text("Cryo Gem").color(NamedTextColor.AQUA));
+                gemItemMeta.itemName(Component.text("Cryo Gem").color(TextColor.fromHexString("#5fe3ff")));
                 gemItemMeta.lore(List.of(
-                        Component.text("Gem of the Ice Elemental"),
-                        Component.text("Grants the power of frost to its wielder."),
-                        Component.text("Can be used to create powerful ice-based spells.")
+                        Component.text("Slows nearby foes and reduces damage taken.").color(TextColor.fromHexString("#cedfff")),
+                        Component.text("Right-click to freeze targets in place.").color(TextColor.fromHexString("#a4acff"))
                 ));
                 customModelKey = "icegem";
             }
             case LIGHT -> {
-                gemItemMeta.itemName(Component.text("Photo Gem").color(NamedTextColor.YELLOW));
+                gemItemMeta.itemName(Component.text("Photo Gem").color(TextColor.fromHexString("#ffff81")));
                 gemItemMeta.lore(List.of(
-                        Component.text("Gem of the Light Elemental"),
-                        Component.text("Grants the power of light to its wielder."),
-                        Component.text("Can be used to create powerful light-based spells.")
+                        Component.text("Lets you see players through walls.").color(TextColor.fromHexString("#eee27b")),
+                        Component.text("Activate the gem on a player to strike lightning on them.").color(TextColor.fromHexString("#eec04d"))
                 ));
                 customModelKey = "lightgem";
             }
             case WATER -> {
-                gemItemMeta.itemName(Component.text("Hydro Gem").color(NamedTextColor.BLUE));
+                gemItemMeta.itemName(Component.text("Hydro Gem").color(TextColor.fromHexString("#2373E0")));
                 gemItemMeta.lore(List.of(
-                        Component.text("Gem of the Water Elemental"),
-                        Component.text("Grants the power of water to its wielder."),
-                        Component.text("Can be used to create powerful water-based spells.")
+                        Component.text("Gives Water Breathing and Dolphin’s Grace.").color(TextColor.fromHexString("#b9daff")),
+                        Component.text("Right-click to fire a high-pressure water jet.").color(TextColor.fromHexString("#40c7ff"))
                 ));
                 customModelKey = "watergem";
             }
         }
 
-        // <i>Apply enchantments and item flags</i>
+        // Add enchantments and flags
         gemItemMeta.addEnchant(Enchantment.MENDING, 1, true);
         gemItemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
 
