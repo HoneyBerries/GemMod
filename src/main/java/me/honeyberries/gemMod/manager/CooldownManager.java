@@ -15,30 +15,31 @@ import static me.honeyberries.gemMod.manager.GemManager.identifyGemType;
 import me.honeyberries.gemMod.manager.GemManager.GemType;
 
 /**
- * Manages all gem cooldowns and updates the player's action bar with cooldown information.
- * Handles thread-safe operations and scheduled updates.
+ * <b>CooldownManager</b> manages all gem cooldowns and updates the player's action bar with cooldown information.
+ * Handles thread-safe operations and scheduled updates for cooldowns.
+ * </p>
  */
 public class CooldownManager {
 
-
-    /** Singleton instance */
+    /** <b>Singleton instance</b> */
     private static final CooldownManager INSTANCE = new CooldownManager();
 
-    /** Reference to the main plugin instance */
+    /** <b>Reference to the main plugin instance</b> */
     private final GemMod plugin = GemMod.getInstance();
 
     /**
-     * Mapping of player UUIDs to their gem cooldown expiry times.
+     * <b>Mapping of player UUIDs to their gem cooldown expiry times.</b>
      */
     private final Map<UUID, Map<GemType, Long>> cooldowns = new ConcurrentHashMap<>();
 
     /**
-     * Stores scheduled tasks for updating action bars.
+     * <b>Stores scheduled tasks for updating action bars.</b>
      */
     private final Map<UUID, ScheduledTask> actionBarTasks = new ConcurrentHashMap<>();
 
     /**
      * Returns the singleton instance of the CooldownManager.
+     * </p>
      *
      * @return the active CooldownManager instance.
      */
@@ -48,6 +49,7 @@ public class CooldownManager {
 
     /**
      * Sets a cooldown for a player and gem type while optionally showing the cooldown timer.
+     * </p>
      *
      * @param player the player to set the cooldown for
      * @param gemType the gem type to apply the cooldown
@@ -59,6 +61,7 @@ public class CooldownManager {
         Map<GemType, Long> playerCooldowns = cooldowns.computeIfAbsent(uuid, k -> new ConcurrentHashMap<>());
         playerCooldowns.put(gemType, System.currentTimeMillis() + durationMillis);
         if (showActionBar) {
+            // <i>Show cooldown in action bar if requested</i>
             showCooldownActionBar(player);
         }
     }
@@ -66,6 +69,7 @@ public class CooldownManager {
     /**
      * Removes the cooldown for the given player and gem type.
      * Also cancels any active action bar display for that gem.
+     * </p>
      *
      * @param player the player to update
      * @param gemType the gem type to remove from cooldown tracking
@@ -79,7 +83,7 @@ public class CooldownManager {
                 cooldowns.remove(uuid);
             }
         }
-        // Clear action bar if the cooldown gem is in use.
+        // <i>Clear action bar if the cooldown gem is in use</i>
         ItemStack heldItem = player.getInventory().getItemInMainHand();
         if (gemType == identifyGemType(heldItem)) {
             cancelActionBarTask(player);
@@ -89,6 +93,7 @@ public class CooldownManager {
 
     /**
      * Determines if the player is currently on cooldown for the specified gem type.
+     * </p>
      *
      * @param player the player being checked
      * @param gemType the gem type to evaluate
@@ -100,6 +105,7 @@ public class CooldownManager {
 
     /**
      * Returns the remaining cooldown time in milliseconds for the specified player and gem type.
+     * </p>
      *
      * @param player the player being checked
      * @param gemType the gem type of interest
@@ -118,6 +124,7 @@ public class CooldownManager {
 
     /**
      * Updates the action bar for the player when switching hotbar slots.
+     * </p>
      *
      * @param player the player who switched slots
      * @param newItem the new item in the hotbar slot
@@ -125,6 +132,7 @@ public class CooldownManager {
     public void handleHotbarSwitch(Player player, ItemStack newItem) {
         GemType gemType = identifyGemType(newItem);
         if (gemType != null && isOnCooldown(player, gemType)) {
+            // <i>Show or clear cooldown action bar based on held item</i>
             showCooldownActionBar(player);
         } else {
             cancelActionBarTask(player);
@@ -134,6 +142,7 @@ public class CooldownManager {
 
     /**
      * Cancels the scheduled action bar update task for the player.
+     * </p>
      *
      * @param player the player whose task should be canceled.
      */
@@ -148,6 +157,7 @@ public class CooldownManager {
     /**
      * Displays and updates the cooldown timer in the player's action bar.
      * The task runs periodically to update the remaining seconds.
+     * </p>
      *
      * @param player the player to display the cooldown for.
      */
@@ -178,6 +188,7 @@ public class CooldownManager {
                         return;
                     }
                     long seconds = timeLeft / 1000;
+                    // <i>Update action bar with cooldown timer, cancel when done</i>
                     player.sendActionBar(Component.text(String.format("Cooldown: %ds", seconds), NamedTextColor.GOLD));
                 },
                 null,
