@@ -6,7 +6,7 @@
 
 ## Features
 
-- **Air Gem**: Double jump and immunity to fall/fly-into-wall damage.
+- **Air Gem**: Dash and immunity to fall/fly-into-wall damage.
 - **Darkness Gem**: Temporary invisibility and blinding attacks.
 - **Earth Gem**: Grants Haste, Speed, Strength, and temporary invulnerability.
 - **Fire Gem**: Launches powerful fireballs and grants fire resistance.
@@ -22,7 +22,7 @@
 
 1. Download the latest release of GemMod.
 2. Place the `.jar` file into your server's `plugins` directory.
-3. Restart or reload your server.
+3. Restart the server.
 
 ---
 
