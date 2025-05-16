@@ -1,5 +1,7 @@
 package me.honeyberries.gemMod.command;
 
+import me.honeyberries.gemMod.GemMod;
+import me.honeyberries.gemMod.configuration.GemModData;
 import me.honeyberries.gemMod.manager.GemManager.GemType;
 import me.honeyberries.gemMod.manager.GemManager;
 import net.kyori.adventure.text.Component;
@@ -18,6 +20,10 @@ import java.util.List;
  * Handles the /gem command, allowing players or admins to give gem items.
  */
 public class GemCommand implements TabExecutor {
+
+    // Reference to the main plugin instance
+    private final GemMod plugin = GemMod.getInstance();
+
 
     /**
      * Processes the /gem command.
@@ -39,6 +45,12 @@ public class GemCommand implements TabExecutor {
         // Display the help message if no arguments or "help" is provided.
         if (args.length == 0 || args[0].equalsIgnoreCase("help")) {
             sendHelpMessage(sender);
+            return true;
+        }
+        if (args[0].equalsIgnoreCase("reload")) {
+            // Reload the plugin configuration and recipes
+            GemModData.loadData();
+            sender.sendMessage(Component.text("GemMod configuration reloaded and recipes updated.", NamedTextColor.GREEN));
             return true;
         }
 
@@ -113,6 +125,8 @@ public class GemCommand implements TabExecutor {
                 sendHelpMessage(sender);
             }
         }
+        // Log the action to the console.
+        plugin.getLogger().info(String.format("%s gave %d %s Gem(s) to %s", sender.getName(), amount, gemType, target.getName()));
         return true;
     }
 
@@ -130,7 +144,7 @@ public class GemCommand implements TabExecutor {
         List<String> suggestions = new ArrayList<>();
         if (args.length == 1) {
             // Suggest available gem types and "help"
-            suggestions.addAll(List.of("air", "fire", "water", "earth", "darkness", "ice", "light", "help"));
+            suggestions.addAll(List.of("air", "fire", "water", "earth", "darkness", "ice", "light", "reload", "help"));
         }
         if (args.length == 2) {
             // Suggest player names
@@ -151,6 +165,8 @@ public class GemCommand implements TabExecutor {
                 .append(Component.text(" - Give a gem to a player", NamedTextColor.GOLD)));
         sender.sendMessage(Component.text("/gem help", NamedTextColor.AQUA)
                 .append(Component.text(" - Show this help message", NamedTextColor.GOLD)));
-        sender.sendMessage(Component.text("Available gem types: air, fire, water, earth, darkness, ice, light", NamedTextColor.GOLD));
+        sender.sendMessage(Component.text("/gem reload", NamedTextColor.AQUA)
+                .append(Component.text(" - Reload the plugin configuration", NamedTextColor.GOLD)));
+        sender.sendMessage(Component.text("Available gem types: air, fire, water, earth, darkness, ice, light", NamedTextColor.GREEN));
     }
 }
