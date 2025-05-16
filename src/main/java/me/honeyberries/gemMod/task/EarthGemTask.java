@@ -59,11 +59,11 @@ public class EarthGemTask {
     }
 
     /**
-     * Applies the Haste and Speed potion effect to the specified player on their region thread.
+     * Applies the Haste, Speed, and Strength potion effect to the specified player on their region thread.
      *
      * @param player The player to apply the effect to.
      */
-    private static void applyHasteAndSpeedEffect(Player player) {
+    private static void applyEarthPotionEffect(Player player) {
         player.getScheduler().run(plugin, scheduledPlayerTask -> {
             player.addPotionEffect(new PotionEffect(
                 PotionEffectType.HASTE, POTION_DURATION_TICKS, POTION_AMPLIFIER, true, false, true
