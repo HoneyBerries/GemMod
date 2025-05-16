@@ -104,8 +104,8 @@ public class GemManager {
             case AIR -> {
                 gemItemMeta.itemName(Component.text("Aero Gem").color(TextColor.fromHexString("#f7ded1")));
                 gemItemMeta.lore(List.of(
-                        Component.text("Grants Speed II and Slow Falling.").color(TextColor.fromHexString("#ddfff8")),
-                        Component.text("Right-click to release a gust of wind.").color(TextColor.fromHexString("#e7e3ff"))
+                        Component.text("Grants immunity to fall and flight damage.").color(TextColor.fromHexString("#ddfff8")),
+                        Component.text("Use this gem to dash forward with a burst of wind.").color(TextColor.fromHexString("#e7e3ff"))
                 ));
                 customModelKey = "airgem";
             }
