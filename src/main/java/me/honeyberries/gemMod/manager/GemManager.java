@@ -17,12 +17,14 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Utility class for creating and managing custom gem items with specific properties.
+ * <b>GemManager</b> is a utility class for creating and managing custom gem items with specific properties.
+ * </p>
  */
 public class GemManager {
 
     /**
      * Enum representing the various types of gems available.
+     * </p>
      */
     public enum GemType {
         AIR,
@@ -36,6 +38,7 @@ public class GemManager {
 
     /**
      * Checks if the specified player has at least one gem of the given type in their inventory.
+     * </p>
      *
      * @param player  the player whose inventory to check
      * @param gemType the type of gem to look for
@@ -48,6 +51,7 @@ public class GemManager {
 
     /**
      * Checks if the player is currently holding a gem of the specified type in their main hand.
+     * </p>
      *
      * @param player  the player to check
      * @param gemType the type of gem to verify
@@ -60,6 +64,7 @@ public class GemManager {
 
     /**
      * Identifies the gem type of a given item based on its properties.
+     * </p>
      *
      * @param item the item to identify
      * @return the GemType if the item is a gem; null if the item is not a gem
@@ -69,19 +74,20 @@ public class GemManager {
             return null;
         }
 
-        // Iterate through each gem type to check if the item matches
+        // <i>Iterate through each gem type to check if the item matches</i>
         for (GemType gemType : GemType.values()) {
             if (item.isSimilar(createGem(gemType, 1))) {
                 return gemType;
             }
         }
-        // Return null if no match is found
+        // <i>Return null if no match is found</i>
         return null;
     }
 
     /**
      * Creates a customized gem item of the specified type and amount.
      * Sets properties such as name, lore, custom model data, and enchantments.
+     * </p>
      *
      * @param gemType the type of gem to create
      * @param amount  the quantity of the item to generate
@@ -93,6 +99,7 @@ public class GemManager {
 
         String customModelKey = null;
 
+        // <i>Set gem name, lore, and custom model key based on type</i>
         switch (gemType) {
             case AIR -> {
                 gemItemMeta.itemName(Component.text("Aero Gem").color(NamedTextColor.AQUA));
@@ -159,18 +166,17 @@ public class GemManager {
             }
         }
 
+        // <i>Apply enchantments and item flags</i>
         gemItemMeta.addEnchant(Enchantment.MENDING, 1, true);
         gemItemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
 
-        // Apply the meta data FIRST
+        // <i>Apply meta and custom model data</i>
         gemItemStack.setItemMeta(gemItemMeta);
 
-        // Only now, set the data component (after setItemMeta)
         if (customModelKey != null) {
             CustomModelData customModelData = CustomModelData.customModelData().addString(customModelKey).build();
             gemItemStack.setData(DataComponentTypes.CUSTOM_MODEL_DATA, customModelData);
         }
-
 
         return gemItemStack;
     }
