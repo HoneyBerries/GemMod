@@ -13,7 +13,7 @@ commands:
     permission-message: You do not have permission to use this command.
 
 permissions:
-    gemmod.command:
+    gemmod.command.gem:
         description: Allows the player to use the /gem command
         default: op
     gemmod.cooldown.bypass:
