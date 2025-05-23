@@ -174,7 +174,7 @@ public class GemRecipe {
 
         // Set the ingredients for the Light Gem recipe
         lightGemRecipe.setIngredient('#', Material.LIGHTNING_ROD);
-        lightGemRecipe.setIngredient('/', Material.END_ROD);
+        lightGemRecipe.setIngredient('/', Material.DIAMOND_BLOCK);
         lightGemRecipe.setIngredient('G', Material.GOLD_BLOCK);
         lightGemRecipe.setIngredient('T', Material.TRIDENT);
         lightGemRecipe.setIngredient('R', Material.REDSTONE_BLOCK);
