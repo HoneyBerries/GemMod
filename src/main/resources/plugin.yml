@@ -19,9 +19,3 @@ permissions:
     gemmod.cooldown.bypass:
       description: Allows the player to bypass cooldowns
       default: false
-    gemmod.admin:
-      description: Gives the player access to all admin functions
-      default: op
-      children:
-        - gemmod.command
-        - gemmod.cooldown.bypass
