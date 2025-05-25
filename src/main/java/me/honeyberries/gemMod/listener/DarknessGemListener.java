@@ -42,6 +42,7 @@ public class DarknessGemListener implements Listener {
     /** Logger for recording events related to the Darkness Gem passive effect. */
     private final Logger logger = plugin.getLogger();
 
+    /** Duration of the Darkness Gem Passive Effect in ticks */
     private final Integer DARKNESS_GEM_PASSIVE_EFFECT_DURATION = 5 * 20; // 5 seconds in ticks
 
     /**
