@@ -7,8 +7,13 @@ import me.honeyberries.gemMod.command.GemCommand;
 import me.honeyberries.gemMod.configuration.GemModData;
 import me.honeyberries.gemMod.listener.*;
 import me.honeyberries.gemMod.task.*;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.plugin.java.JavaPlugin;
 import java.util.Objects;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 
 /**
  * Main class for the GemMod Bukkit plugin.
@@ -36,42 +41,69 @@ import java.util.Objects;
  */
 public final class GemMod extends JavaPlugin {
 
+    /**
+     * A map to track the enabled status of various features.
+     * This allows for dynamic feature management and debugging.
+     */
+    private final Map<String, Boolean> enabledFeatures = new ConcurrentHashMap<>();
+
+    /**
+     * Called when the plugin is loaded.
+     * <p>
+     * Initializes the PacketEvents API and prepares it for use during the plugin's lifecycle.
+     * </p>
+     */
     @Override
     public void onLoad() {
+        try {
+            // Initialize the PacketEvents API
+            PacketEvents.setAPI(SpigotPacketEventsBuilder.build(this));
+            PacketEventsSettings settings = PacketEvents.getAPI().getSettings();
 
-        // Initialize the PacketEvents API
-        PacketEvents.setAPI(SpigotPacketEventsBuilder.build(this));
-        PacketEventsSettings settings = PacketEvents.getAPI().getSettings();
+            settings.checkForUpdates(false); // Disable update checks for stability
 
-        settings.checkForUpdates(false); // Enable debug mode for detailed logging
-
-        //On Bukkit, calling this here is essential, hence the name "load"
-        PacketEvents.getAPI().load();
-        getLogger().info("PacketEvents API loaded successfully pre-enable");
+            // Load the PacketEvents API
+            PacketEvents.getAPI().load();
+            getLogger().info("PacketEvents API loaded successfully pre-enable");
+            setFeatureEnabled("packetEvents", true);
+        } catch (Exception e) {
+            getLogger().log(Level.SEVERE, "Failed to load PacketEvents API", e);
+            setFeatureEnabled("packetEvents", false);
+        }
     }
 
     /**
      * Called when the plugin is enabled.
      * <p>
-     * Initializes the plugin by:
+     * Initializes the plugin by loading configuration, registering commands, event listeners,
+     * and scheduling recurring tasks.
      * </p>
-     * <ol>
-     *   <li>Setting up the GlowingEntities dependency</li>
-     *   <li>Registering commands</li>
-     *   <li>Setting up event listeners</li>
-     *   <li>Scheduling recurring tasks</li>
-     * </ol>
      */
     @Override
     public void onEnable() {
-        getLogger().info("---------- GemMod Enabled ----------");
-        getLogger().info("Loading plugin data...");
-        GemModData.loadData();
-        getLogger().info("Configuration files loaded successfully");
+        getLogger().info("\n---------- GemMod Enabled ----------\n");
 
-        // Initialize PacketEvents API
-        PacketEvents.getAPI().init();
-        getLogger().info("PacketEvents API ready");
+        // Load configuration data
+        try {
+            getLogger().info("Loading plugin data...");
+            GemModData.loadData();
+            getLogger().info("Configuration files loaded successfully");
+            setFeatureEnabled("configuration", true);
+        } catch (Exception e) {
+            getLogger().log(Level.SEVERE, "Failed to load configuration data", e);
+            setFeatureEnabled("configuration", false);
+        }
+
+        // Initialize PacketEvents API if previously loaded
+        if (isFeatureEnabled("packetEvents")) {
+            try {
+                PacketEvents.getAPI().init();
+                getLogger().info("PacketEvents API ready");
+            } catch (Exception e) {
+                getLogger().log(Level.SEVERE, "Failed to initialize PacketEvents API", e);
+                setFeatureEnabled("packetEvents", false);
+            }
+        }
 
         // Register commands, event listeners, and tasks
         getLogger().info("Registering commands, event listeners, and tasks...");
@@ -79,7 +111,10 @@ public final class GemMod extends JavaPlugin {
         registerEventListeners();
         scheduleTasks();
 
-        getLogger().info("---------- GemMod Initialization Complete ----------");
+        // Log which features were successfully enabled
+        logEnabledFeatures();
+
+        getLogger().info("\n\n---------- GemMod Initialization Complete ----------\n\n");
     }
 
     /**
@@ -92,9 +127,15 @@ public final class GemMod extends JavaPlugin {
      * </ul>
      */
     private void registerCommands() {
-        // Register the /gem command with the GemCommand executor
-        Objects.requireNonNull(getCommand("gem")).setExecutor(new GemCommand());
-        getLogger().info("Registered /gem command");
+        try {
+            // Register the /gem command with the GemCommand executor
+            Objects.requireNonNull(getCommand("gem")).setExecutor(new GemCommand());
+            getLogger().info("Registered /gem command");
+            setFeatureEnabled("gemCommand", true);
+        } catch (Exception e) {
+            getLogger().log(Level.SEVERE, "Failed to register /gem command", e);
+            setFeatureEnabled("gemCommand", false);
+        }
     }
 
     /**
@@ -110,19 +151,58 @@ public final class GemMod extends JavaPlugin {
     private void registerEventListeners() {
         // Register general listeners
         getLogger().info("Registering general event listeners...");
-        getServer().getPluginManager().registerEvents(new HotbarSwitchCooldownListener(), this);
-        getServer().getPluginManager().registerEvents(new GemUsageListener(), this);
+
+        try {
+            getServer().getPluginManager().registerEvents(new HotbarSwitchCooldownListener(), this);
+            setFeatureEnabled("hotbarCooldown", true);
+            getLogger().info("Registered HotbarSwitchCooldownListener");
+        } catch (Exception e) {
+            getLogger().log(Level.SEVERE, "Failed to register HotbarSwitchCooldownListener", e);
+            setFeatureEnabled("hotbarCooldown", false);
+        }
+
+        try {
+            getServer().getPluginManager().registerEvents(new GemUsageListener(), this);
+            setFeatureEnabled("gemUsage", true);
+            getLogger().info("Registered GemUsageListener");
+        } catch (Exception e) {
+            getLogger().log(Level.SEVERE, "Failed to register GemUsageListener", e);
+            setFeatureEnabled("gemUsage", false);
+        }
 
         // Register gem-specific listeners
         getLogger().info("Registering gem-specific event listeners...");
-        getServer().getPluginManager().registerEvents(new AirGemListener(), this);
-        getServer().getPluginManager().registerEvents(new DarknessGemListener(), this);
+
+        try {
+            getServer().getPluginManager().registerEvents(new AirGemListener(), this);
+            setFeatureEnabled("airGem", true);
+            getLogger().info("Registered AirGemListener");
+        } catch (Exception e) {
+            getLogger().log(Level.SEVERE, "Failed to register AirGemListener", e);
+            setFeatureEnabled("airGem", false);
+        }
+
+        try {
+            getServer().getPluginManager().registerEvents(new DarknessGemListener(), this);
+            setFeatureEnabled("darknessGem", true);
+            getLogger().info("Registered DarknessGemListener");
+        } catch (Exception e) {
+            getLogger().log(Level.SEVERE, "Failed to register DarknessGemListener", e);
+            setFeatureEnabled("darknessGem", false);
+        }
 
         // Register Gem Crafting Listener
-        getLogger().info("Registering gem crafting event listener...");
-        getServer().getPluginManager().registerEvents(new GemCraftListener(), this);
+        try {
+            getLogger().info("Registering gem crafting event listener...");
+            getServer().getPluginManager().registerEvents(new GemCraftListener(), this);
+            setFeatureEnabled("gemCrafting", true);
+            getLogger().info("Registered GemCraftListener");
+        } catch (Exception e) {
+            getLogger().log(Level.SEVERE, "Failed to register GemCraftListener", e);
+            setFeatureEnabled("gemCrafting", false);
+        }
 
-        getLogger().info("All event listeners registered successfully");
+        getLogger().info("Event listener registration complete");
     }
 
     /**
@@ -137,18 +217,35 @@ public final class GemMod extends JavaPlugin {
      * </ul>
      */
     private void scheduleTasks() {
-        getLogger().info("Starting Earth Gem task...");
-        EarthGemTask.startEarthGemTask();
+        try {
+            getLogger().info("Starting Earth Gem task...");
+            EarthGemTask.startEarthGemTask();
+            setFeatureEnabled("earthGem", true);
+        } catch (Exception e) {
+            getLogger().log(Level.SEVERE, "Failed to start Earth Gem task", e);
+            setFeatureEnabled("earthGem", false);
+        }
 
-        getLogger().info("Starting Fire Gem task...");
-        FireGemTask.startFireGemTask();
+        try {
+            getLogger().info("Starting Fire Gem task...");
+            FireGemTask.startFireGemTask();
+            setFeatureEnabled("fireGem", true);
+        } catch (Exception e) {
+            getLogger().log(Level.SEVERE, "Failed to start Fire Gem task", e);
+            setFeatureEnabled("fireGem", false);
+        }
 
-        getLogger().info("Starting Light Gem task...");
-        LightGemTask.startLightGemTask();
+        try {
+            getLogger().info("Starting Light Gem task...");
+            LightGemTask.startLightGemTask();
+            setFeatureEnabled("lightGem", true);
+        } catch (Exception e) {
+            getLogger().log(Level.SEVERE, "Failed to start Light Gem task", e);
+            setFeatureEnabled("lightGem", false);
+        }
 
-        getLogger().info("All recurring tasks scheduled successfully");
+        getLogger().info("Task scheduling complete");
     }
-
 
     /**
      * Called when the plugin is disabled.
@@ -165,13 +262,24 @@ public final class GemMod extends JavaPlugin {
     public void onDisable() {
         getLogger().info("---------- GemMod Disabling ----------");
 
-        getLogger().info("Cancelling all scheduled tasks...");
-        getServer().getGlobalRegionScheduler().cancelTasks(this);
+        try {
+            getLogger().info("Cancelling all scheduled tasks...");
+            getServer().getGlobalRegionScheduler().cancelTasks(this);
+            getLogger().info("Tasks cancelled");
+        } catch (Exception e) {
+            getLogger().log(Level.SEVERE, "Error cancelling tasks", e);
+        }
 
-        getLogger().info("Tasks cancelled");
+        // Disable the PacketEvents API if it was enabled
+        if (isFeatureEnabled("packetEvents")) {
+            try {
+                PacketEvents.getAPI().terminate();
+                getLogger().info("PacketEvents API terminated");
+            } catch (Exception e) {
+                getLogger().log(Level.SEVERE, "Error terminating PacketEvents API", e);
+            }
+        }
 
-        // Disable the PacketEvents API
-        PacketEvents.getAPI().terminate();
         getLogger().info("GemMod disabled. Thank you for using GemMod!");
     }
 
@@ -184,6 +292,37 @@ public final class GemMod extends JavaPlugin {
         return getPlugin(GemMod.class);
     }
 
+    /**
+     * Sets the enabled status of a feature.
+     *
+     * @param feature the feature name
+     * @param enabled true if the feature is enabled, false otherwise
+     */
+    private void setFeatureEnabled(String feature, boolean enabled) {
+        enabledFeatures.put(feature, enabled);
+    }
 
+    /**
+     * Checks if a feature is enabled.
+     *
+     * @param feature the feature to check
+     * @return true if the feature is enabled, false otherwise
+     */
+    public boolean isFeatureEnabled(String feature) {
+        return enabledFeatures.getOrDefault(feature, false);
+    }
+
+    /**
+     * Logs the status of all registered features.
+     */
+    private void logEnabledFeatures() {
+        getLogger().info("\n---------- GemMod Feature Status ----------");
+
+        for (Map.Entry<String, Boolean> entry : enabledFeatures.entrySet()) {
+            NamedTextColor color = entry.getValue() ? NamedTextColor.GREEN : NamedTextColor.RED;
+            getComponentLogger().info(
+                Component.text(entry.getKey() + ": " + (entry.getValue() ? "ENABLED :)" : "DISABLED :("), color)
+            );
+        }
+    }
 }
-
