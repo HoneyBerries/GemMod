@@ -1,0 +1,14 @@
+{
+    "pack": {
+      "pack_format": 46,
+      "supported_formats": {
+            "min_inclusive": 46,
+            "max_inclusive": 2147483647
+        },
+      "description": "Enhances your Gem SMP experience with custom textures and features. Crafted by the Gem SMP team for versions 1.21.4 and above."
+    },
+    "credits": {
+        "HoneyBerries": "Creator of the pack, mainly the json files",
+        "Pepmon270": "Made good art for the pack"    
+    }
+}

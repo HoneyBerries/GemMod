@@ -1,0 +1,61 @@
+{
+    "model": {
+      "type": "select",
+      "property": "custom_model_data",
+      "fallback": {
+        "type": "model",
+        "model": "item/diamond"
+      },
+      "cases": [
+        {
+          "when": "airgem",
+          "model": {
+            "type": "model",
+            "model": "item/airgem"
+          }
+        },
+        {
+          "when": "darknessgem",
+          "model": {
+            "type": "model",
+            "model": "item/darknessgem"
+          }
+        },
+        {
+          "when": "earthgem",
+          "model": {
+            "type": "model",
+            "model": "item/earthgem"
+          }
+        },
+        {
+          "when": "firegem",
+          "model": {
+            "type": "model",
+            "model": "item/firegem"
+          }
+        },
+        {
+          "when": "icegem",
+          "model": {
+            "type": "model",
+            "model": "item/icegem"
+          }
+        },
+        {
+          "when": "lightgem",
+          "model": {
+            "type": "model",
+            "model": "item/lightgem"
+          }
+        },
+        {
+          "when": "watergem",
+          "model": {
+            "type": "model",
+            "model": "item/watergem"
+          }
+        }
+      ]
+    }
+  }
