@@ -8,6 +8,7 @@ import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.entity.Fireball;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.potion.PotionEffect;
@@ -339,22 +340,22 @@ public class AbilityManager {
         }
 
         // Check if the player has a target
-        if (player.getTargetEntity(120) != null && player.getTargetEntity(120) instanceof Player targetPlayer) {
-            logger.info("Player " + player.getName() + " targeting player " + targetPlayer.getName());
+        if (player.getTargetEntity(120) != null && player.getTargetEntity(120) instanceof LivingEntity targetEntity) {
+            logger.info("Player " + player.getName() + " targeting player " + targetEntity.getName() + " with Light Gem");
         } else {
             player.sendMessage(Component.text("You must be looking at another player to use the Light Gem!", NamedTextColor.RED));
             logger.info("No valid target found for " + player.getName() + " to use Light Gem");
             return;
         }
 
-        logger.info("Player " + player.getName() + " targeting player " + targetPlayer.getName() + " with Light Gem");
+        logger.info("Player " + player.getName() + " targeting player " + targetEntity.getName() + " with Light Gem");
 
         //Strike the targeted player with lightning multiple times over a short duration
-        logger.info("Striking " + targetPlayer.getName() + " with lightning bolts");
+        logger.info("Striking " + targetEntity.getName() + " with lightning bolts");
 
         // Strike the target player with lightning and apply damage
-        targetPlayer.damage(30, player); // Damage the target player
-        targetPlayer.getWorld().strikeLightningEffect(targetPlayer.getLocation());
+        targetEntity.damage(30, player); // Damage the target player
+        targetEntity.getWorld().strikeLightningEffect(targetEntity.getLocation());
 
         // Set cooldown for Light Gem usage
         cooldownManager.setCooldown(player, GemType.LIGHT, LIGHT_COOLDOWN_MILLIS, true);
@@ -363,10 +364,10 @@ public class AbilityManager {
         // Provide feedback to the player
         player.sendMessage(Component.text()
                     .append(Component.text("You struck ", TextColor.fromHexString("#ffef4f")))
-                    .append(Component.text(targetPlayer.getName(), NamedTextColor.GREEN))
+                    .append(Component.text(targetEntity.getName(), NamedTextColor.GREEN))
                     .append(Component.text(" with lightning!", TextColor.fromHexString("#ffef4f")))
                 );
-        logger.info("Light Gem ability successfully used by " + player.getName() + " on " + targetPlayer.getName());
+        logger.info("Light Gem ability successfully used by " + player.getName() + " on " + targetEntity.getName());
     }
 
 }
