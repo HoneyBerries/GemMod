@@ -57,6 +57,7 @@ public final class GemMod extends JavaPlugin {
     public void onLoad() {
         try {
             // Initialize the PacketEvents API
+
             PacketEvents.setAPI(SpigotPacketEventsBuilder.build(this));
             PacketEventsSettings settings = PacketEvents.getAPI().getSettings();
 
