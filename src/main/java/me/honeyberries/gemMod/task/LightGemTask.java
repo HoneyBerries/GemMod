@@ -13,7 +13,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -73,9 +72,8 @@ public class LightGemTask {
     }
 
     private static void setPlayerGlowing(final Player viewer, final Player target, final boolean glowing) {
-        final EntityData entityData = getPlayerEntityData(target, glowing);
-        final List<EntityData> metadata = new ArrayList<>();
-        metadata.add(entityData);
+        final EntityData<Byte> entityData = getPlayerEntityData(target, glowing);
+        final List<EntityData<?>> metadata = List.of(entityData);
 
         final int id = target.getEntityId();
         final WrapperPlayServerEntityMetadata packet = new WrapperPlayServerEntityMetadata(id, metadata);
@@ -85,14 +83,14 @@ public class LightGemTask {
         manager.sendPacket(viewer, packet);
       }
 
-    private static @NotNull EntityData getPlayerEntityData(Player player1, boolean glowing) {
+    private static @NotNull EntityData<Byte> getPlayerEntityData(Player player1, boolean glowing) {
 
         final byte flags = (byte) ((player1.getFireTicks() > 0 ? 0x01 : 0) |
                 (player1.isSneaking() ? 0x02 : 0) | (player1.isSprinting() ? 0x08 : 0) |
                 (player1.isSwimming() ? 0x10 : 0) |
                 (player1.isInvisible() ? 0x20 : 0) | (glowing ? 0x40 : 0) |
                 (player1.isGliding() ? 0x80 : 0));
-        return new EntityData(0, EntityDataTypes.BYTE, flags);
+        return new EntityData<>(0, EntityDataTypes.BYTE, flags);
 
     }
 
