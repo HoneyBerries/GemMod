@@ -5,6 +5,7 @@ import me.honeyberries.gemMod.GemMod;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.util.TriState;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.entity.Fireball;
@@ -39,16 +40,15 @@ public class AbilityManager {
     private static final Logger logger = plugin.getLogger();
 
     // Duration of cooldown constants
-    private static final long AIR_COOLDOWN_MILLIS = 15_000; // 30 seconds
-    private static final long DARKNESS_COOLDOWN_MILLIS = 60_000; // 75 seconds
-    private static final long EARTH_COOLDOWN_MILLIS = 70_000; // 70 seconds
-    private static final long FIREBALL_COOLDOWN_MILLIS = 20_000; // 30 seconds
-    private static final long LIGHT_COOLDOWN_MILLIS = 15_000; // 45 seconds
+    public static final long AIR_COOLDOWN_MILLIS = 15_000; // 30 seconds
+    public static final long DARKNESS_COOLDOWN_MILLIS = 60_000; // 75 seconds
+    public static final long EARTH_COOLDOWN_MILLIS = 70_000; // 70 seconds
+    public static final long FIREBALL_COOLDOWN_MILLIS = 20_000; // 30 seconds
+    public static final long LIGHT_COOLDOWN_MILLIS = 15_000; // 45 seconds
 
     // Duration of ability effects
-    private static final int INVISIBILITY_DURATION_TICKS = 15 * 20; // 15 seconds in ticks
-    private static final int INVULNERABILITY_DURATION_TICKS = 10 * 20; // 10 seconds in ticks
-    private static final int LIGHTNING_DURATION_TICKS = 10 * 20; // 10 seconds in ticks
+    public static final int INVISIBILITY_DURATION_TICKS = 15 * 20; // 15 seconds in ticks
+    public static final int INVULNERABILITY_DURATION_TICKS = 10 * 20; // 10 seconds in ticks
 
 
     /**
@@ -138,14 +138,19 @@ public class AbilityManager {
 
         // Create a repeating task to hide player's equipment
         logger.info("Starting equipment hiding task for " + player.getName());
-        ScheduledTask equipmentHideTask = player.getServer().getGlobalRegionScheduler().runAtFixedRate(plugin, scheduledTask -> {
+        ScheduledTask playerHideTask = player.getServer().getGlobalRegionScheduler().runAtFixedRate(plugin, scheduledTask -> {
             if (!player.isOnline()) {
                 logger.info("Player " + player.getName() + " went offline, cancelling equipment hiding task");
                 scheduledTask.cancel();
                 return;
             }
 
-            // <i>Hide player's equipment from other players while invisible</i>
+            // Hide stuff that makes players visible
+            player.setArrowsInBody(0, false);
+            player.setBeeStingersInBody(0);
+            player.setVisualFire(TriState.FALSE);
+
+            // Hide player's equipment from other players while invisible
             for (Player p : Bukkit.getOnlinePlayers()) {
                 if (!p.equals(player)) {
                     p.sendEquipmentChange(player, EquipmentSlot.HAND, null);
@@ -164,10 +169,14 @@ public class AbilityManager {
 
         // Schedule task to cancel invisibility and restore equipment after duration
         logger.info("Scheduling invisibility removal task for " + player.getName() + " in " + (INVISIBILITY_DURATION_TICKS / 20) + " seconds");
+
         plugin.getServer().getGlobalRegionScheduler().runDelayed(plugin, scheduledTask -> {
-            logger.info("Removing invisibility effect from " + player.getName());
-            equipmentHideTask.cancel();
+
+            logger.info("Removing darkness gem effect from " + player.getName());
+            playerHideTask.cancel();
             player.removePotionEffect(PotionEffectType.INVISIBILITY);
+
+            player.setVisualFire(TriState.NOT_SET);
 
             // Restore equipment visibility after invisibility ends
             logger.info("Restoring equipment visibility for " + player.getName());
@@ -192,7 +201,7 @@ public class AbilityManager {
 
         // Notify the player that the ability is active
         player.getWorld().playSound(player.getLocation(), Sound.BLOCK_GRINDSTONE_USE, 1.0f, 1.0f);
-        player.sendMessage(Component.text(String.format("You are now Invisible for %d seconds!", INVISIBILITY_DURATION_TICKS / 20), TextColor.fromHexString("#0e355e")));
+        player.sendMessage(Component.text(String.format("You are now Invisible for %d seconds!", INVISIBILITY_DURATION_TICKS / 20), TextColor.fromHexString("#12375e")));
         logger.info("Darkness Gem ability successfully activated for " + player.getName());
     }
 
@@ -233,7 +242,7 @@ public class AbilityManager {
             }
         }
 
-        // <i>Apply maximum resistance effect for invulnerability</i>
+        // Apply maximum resistance effect for invulnerability
         logger.info("Applying invulnerability effect to " + player.getName() + " for " + (INVULNERABILITY_DURATION_TICKS / 20) + " seconds");
         player.getScheduler().run(plugin, scheduledTask -> {
             player.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE, INVULNERABILITY_DURATION_TICKS, 254, false, true, true));
@@ -343,7 +352,7 @@ public class AbilityManager {
         if (player.getTargetEntity(120) != null && player.getTargetEntity(120) instanceof LivingEntity targetEntity) {
             logger.info("Player " + player.getName() + " targeting player " + targetEntity.getName() + " with Light Gem");
         } else {
-            player.sendMessage(Component.text("You must be looking at another player to use the Light Gem!", NamedTextColor.RED));
+            player.sendMessage(Component.text("You must be looking at another player/mob to use the Light Gem!", NamedTextColor.RED));
             logger.info("No valid target found for " + player.getName() + " to use Light Gem");
             return;
         }
@@ -354,7 +363,7 @@ public class AbilityManager {
         logger.info("Striking " + targetEntity.getName() + " with lightning bolts");
 
         // Strike the target player with lightning and apply damage
-        targetEntity.damage(30, player); // Damage the target player
+        targetEntity.damage(60, player); // Damage the target entity with 60 health points (30 hearts)
         targetEntity.getWorld().strikeLightningEffect(targetEntity.getLocation());
 
         // Set cooldown for Light Gem usage
