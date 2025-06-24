@@ -4,12 +4,13 @@ main: me.honeyberries.gemMod.GemMod
 api-version: '1.21.4'
 authors: [ HoneyBerries ]
 description: Plugin for the Gem SMP
+depend: [packetevents]
 folia-supported: true
 commands:
   gem:
     description: Lets you give players gems
     usage: /gem <gem-type> <player (optional)> <amount (optional)>
-    permission: gemmod.command
+    permission: gemmod.command.gem
     permission-message: You do not have permission to use this command.
 
 permissions:
