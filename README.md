@@ -1,72 +1,84 @@
 # GemMod
 
-**GemMod** is a Minecraft plugin that introduces powerful elemental gems, each granting unique abilities and passive effects to players. Enhance your gameplay with new mechanics, strategic combat, and rare crafting challenges.
-
----
+A feature-rich Minecraft plugin for Paper/Folia 1.21.4+ that introduces magical gems with unique abilities for players. Perfect for SMPs and custom servers seeking new gameplay mechanics!
 
 ## Features
 
-- **Air Gem**: Dash and immunity to fall/fly-into-wall damage.
-- **Darkness Gem**: Temporary invisibility and blinding attacks.
-- **Earth Gem**: Grants Haste, Speed, Strength, and temporary invulnerability.
-- **Fire Gem**: Launches powerful fireballs and grants fire resistance.
-- **Light Gem**: Strikes targets with lightning and reveals all players with a glowing outline.
-- **Ice & Water Gems**: (Planned/expand as needed)
-- **Unique Crafting**: Each gem can only be crafted once per server.
-- **Cooldowns**: Abilities have configurable cooldowns, with action bar feedback.
-- **Admin Commands**: Give gems, reload config, and more.
+- Custom crafting recipes for each gem
+- Cooldown system and permission-based bypass
+- Highly configurable and designed for performance (Folia supported)
 
----
+## Gems
+
+- **Air Gem**: Double jump with a powerful velocity boost
+- **Darkness Gem**: Become invisible and hide your equipment from others
+- **Earth Gem**: Gain temporary invulnerability with maximum resistance
+- **Fire Gem**: Launch explosive fireballs
+- **Light Gem**: Strike players with lightning and see others glowing through walls
+
+## Upcoming Gems
+
+GemMod is actively developed! Here are some gems planned for future updates:
+
+- **Ice Gem**: Freeze water, slow down enemies, or create ice paths
+- **Water Gem**: Breathe underwater, swim faster, or control water flows
+- More unique gems and abilities are in the works—suggest your ideas on our [Discord](https://discord.com/invite/3W5GQ37h)!
 
 ## Installation
 
-1. Download the latest release of GemMod.
-2. Place the `.jar` file into your server's `plugins` directory.
-3. Restart the server.
+> **Note:** GemMod is very new and there is currently **no public download available**. You must build the plugin yourself from source. If you need help, feel free to ask in our [Discord](https://discord.com/invite/3W5GQ37h)!
 
----
-
-## Usage
-
-- **Crafting**: Gems are crafted using special recipes. Once crafted, the recipe is removed and cannot be used again.
-- **Abilities**: Right-click with a gem in your main hand to activate its ability (if available).
-- **Passive Effects**: Simply keep the gem in your inventory to benefit from its passive powers.
-
----
+1. Download and install the latest [PacketEvents plugin](https://modrinth.com/plugin/packetevents) (required dependency). Place it in your server's `plugins` folder.
+2. Clone the repository:
+   ```sh
+   git clone https://github.com/HoneyBerries/GemMod.git
+   cd GemMod
+   ```
+3. Build with Maven:
+   ```sh
+   mvn clean package
+   ```
+4. Place the generated `GemMod.jar` from the `target/` folder into your server's `plugins` directory.
+5. Start or reload your server.
+6. Configure settings in `data.yml` as needed.
 
 ## Commands
 
-| Command                              | Description                                 | Permission                   |
-|---------------------------------------|---------------------------------------------|------------------------------|
-| `/gem <gem-type> [player] [amount]`   | Give a gem to a player                      | `honeyberries.command.gem`   |
-| `/gem reload`                         | Reload plugin configuration and recipes      | `honeyberries.command.gem`   |
-| `/gem help`                           | Show help message                           | `honeyberries.command.gem`   |
+- `/gem <gem-type> <player (optional)> <amount (optional)>`
+  - Give gems to yourself or other players.
+  - Permission: `gemmod.command.gem`
 
----
+## Permissions
 
-## Configuration
+- `gemmod.command.gem` — Use the `/gem` command (default: OP)
+- `gemmod.cooldown.bypass` — Bypass gem ability cooldowns (default: false)
 
-Gem crafting status is tracked in `data.yml`. Each gem can only be crafted once per server. To reset crafting, edit or delete `data.yml` and reload the plugin.
+## Supported Platforms
 
----
+- **Paper** 1.21.4+
+- **Folia** 1.21.4+
 
-## Development
+## Building from Source
 
-- Built for PaperMC/Folia 1.21.4+ (update as needed)
-
----
+1. Clone the repository:
+   ```sh
+   git clone https://github.com/HoneyBerries/GemMod.git
+   cd GemMod
+   ```
+2. Build with Maven:
+   ```sh
+   mvn clean package
+   ```
+3. The plugin JAR will be in the `target/` directory.
 
 ## Contributing
 
-Contributions, suggestions, and bug reports are welcome! Please open an issue or pull request on GitHub.
+Pull requests and suggestions are welcome! Please open an issue or PR on [GitHub](https://github.com/HoneyBerries/GemMod).
+
+## License
+
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
 
 ---
 
-## Credits
-
-- Plugin by HoneyBerries
-- Art by Pepmon270
-
----
-
-*Good luck, adventurer!*
+*Created with ❤️ by [HoneyBerries](https://github.com/HoneyBerries)*
