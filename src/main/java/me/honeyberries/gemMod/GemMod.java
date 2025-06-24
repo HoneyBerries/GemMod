@@ -145,13 +145,21 @@ public final class GemMod extends JavaPlugin {
      * This includes:
      * </p>
      * <ul>
-     *   <li>General listeners for gem usage and cooldown management</li>
+     *   <li>General listeners for gem usage and cooldown management, etc</li>
      *   <li>Gem-specific listeners for special ability triggers</li>
      * </ul>
      */
     private void registerEventListeners() {
         // Register general listeners
         getLogger().info("Registering general event listeners...");
+        try {
+            getServer().getPluginManager().registerEvents(new PlayerJoinListener(), this);
+            setFeatureEnabled("resourcepack", true);
+            getLogger().info("Registered resource pack download listener (PlayerJoinListener)");
+        } catch (Exception e) {
+            getLogger().log(Level.SEVERE, "Failed to register resource pack download listener", e);
+            setFeatureEnabled("resourcepack", false);
+        }
 
         try {
             getServer().getPluginManager().registerEvents(new HotbarSwitchCooldownListener(), this);
@@ -236,12 +244,17 @@ public final class GemMod extends JavaPlugin {
             setFeatureEnabled("fireGem", false);
         }
 
-        try {
-            getLogger().info("Starting Light Gem task...");
-            LightGemTask.startLightGemTask();
-            setFeatureEnabled("lightGem", true);
-        } catch (Exception e) {
-            getLogger().log(Level.SEVERE, "Failed to start Light Gem task", e);
+        if (isFeatureEnabled("packetEvents")) {
+            try {
+                getLogger().info("Starting Light Gem task...");
+                LightGemTask.startLightGemTask();
+                setFeatureEnabled("lightGem", true);
+            } catch (Exception e) {
+                getLogger().log(Level.SEVERE, "Failed to start Light Gem task", e);
+                setFeatureEnabled("lightGem", false);
+            }
+        } else {
+            getLogger().warning("Skipping Light Gem task: PacketEvents is not enabled.");
             setFeatureEnabled("lightGem", false);
         }
 

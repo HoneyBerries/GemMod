@@ -1,10 +1,10 @@
 name: GemMod
 version: '1.0'
 main: me.honeyberries.gemMod.GemMod
-api-version: '1.21.4'
+api-version: '1.21.5'
 authors: [ HoneyBerries ]
 description: Plugin for the Gem SMP
-depend: [packetevents]
+softdepend: [packetevents]
 folia-supported: true
 commands:
   gem:
