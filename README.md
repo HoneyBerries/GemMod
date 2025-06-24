@@ -55,8 +55,8 @@ GemMod is actively developed! Here are some gems planned for future updates:
 
 ## Supported Platforms
 
-- **Paper** 1.21.4+
-- **Folia** 1.21.4+
+- **Paper** 1.21.5+
+- **Folia** 1.21.5+
 
 ## Building from Source
 
