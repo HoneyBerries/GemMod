@@ -1,6 +1,23 @@
 # GemMod
 
-A feature-rich Minecraft plugin for Paper/Folia 1.21.4+ that introduces magical gems with unique abilities for players. Perfect for SMPs and custom servers seeking new gameplay mechanics!
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+[![Version](https://img.shields.io/badge/Version-1.0.0-brightgreen.svg)](https://github.com/HoneyBerries/GemMod/releases)
+[![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen.svg)](https://github.com/HoneyBerries/GemMod/actions)
+
+A feature-rich Minecraft plugin for Paper/Folia 1.21.5+ that introduces magical gems with unique abilities for players. Perfect for SMPs and custom servers seeking new gameplay mechanics!
+
+## Table of Contents
+
+- [Features](#features)
+- [Gems](#gems)
+- [Installation](#installation)
+- [Commands](#commands)
+- [Permissions](#permissions)
+- [Upcoming Gems](#upcoming-gems)
+- [Supported Platforms](#supported-platforms)
+- [Building from Source](#building-from-source)
+- [Contributing](#contributing)
+- [License](#license)
 
 ## Features
 
@@ -15,14 +32,6 @@ A feature-rich Minecraft plugin for Paper/Folia 1.21.4+ that introduces magical 
 - **Earth Gem**: Gain temporary invulnerability with maximum resistance
 - **Fire Gem**: Launch explosive fireballs
 - **Light Gem**: Strike players with lightning and see others glowing through walls
-
-## Upcoming Gems
-
-GemMod is actively developed! Here are some gems planned for future updates:
-
-- **Ice Gem**: Freeze water, slow down enemies, or create ice paths
-- **Water Gem**: Breathe underwater, swim faster, or control water flows
-- More unique gems and abilities are in the works—suggest your ideas on our [Discord](https://discord.com/invite/3W5GQ37h)!
 
 ## Installation
 
@@ -52,6 +61,14 @@ GemMod is actively developed! Here are some gems planned for future updates:
 
 - `gemmod.command.gem` — Use the `/gem` command (default: OP)
 - `gemmod.cooldown.bypass` — Bypass gem ability cooldowns (default: false)
+
+## Upcoming Gems
+
+GemMod is actively developed! Here are some gems planned for future updates:
+
+- **Ice Gem**: Freeze water, slow down enemies, or create ice paths
+- **Water Gem**: Breathe underwater, swim faster, or control water flows
+- More unique gems and abilities are in the works—suggest your ideas on our [Discord](https://discord.com/invite/3W5GQ37h)!
 
 ## Supported Platforms
 
