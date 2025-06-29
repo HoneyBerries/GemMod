@@ -7,14 +7,17 @@ import me.honeyberries.gemMod.manager.GemManager.GemType;
 import me.honeyberries.gemMod.recipe.GemRecipe;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
+
+import java.time.Duration;
 
 /**
  * Listener class for handling gem crafting events in the GemMod plugin.
@@ -66,21 +69,50 @@ public class GemCraftListener implements Listener {
             plugin.getServer().removeRecipe(recipeKey);
         }
 
-        for (Player p : Bukkit.getOnlinePlayers()) {
-            p.playSound(p.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 0.75f, 1.0f);
-        }
 
         // Log the crafting event and send a broadcast message to all players
         plugin.getLogger().info(gemType.name() + " gem crafted and recipe removed.");
+
+        String aCase = gemType.name().substring(1).toLowerCase();
+
+        Title title = getTitle(gemType, aCase);
+
+        Bukkit.getOnlinePlayers().forEach(p -> {
+            p.playSound(p.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 0.75f, 1.0f);
+            p.showTitle(title);
+        });
+
         plugin.getServer().broadcast(
-            Component.text("The ", NamedTextColor.LIGHT_PURPLE)
-                .append(Component.text(
-                    gemType.name().charAt(0) + gemType.name().substring(1).toLowerCase(),
+            Component.text(
+                    gemType.name().charAt(0) + aCase,
                     NamedTextColor.AQUA
-                ))
+                )
                 .append(Component.text(" Gem ", NamedTextColor.AQUA))
-                .append(Component.text("has been crafted! ", NamedTextColor.GREEN))
+                .append(Component.text("is now crafted! ", NamedTextColor.GREEN))
                 .append(Component.text("It cannot be crafted again!", NamedTextColor.RED))
+        );
+    }
+
+    /**
+     * Constructs a Title object for the gem crafting notification.
+     *
+     * @param gemType The type of gem that was crafted
+     * @param aCase   The case to be used in the title (e.g., "Air", "Darkness")
+     * @return A Title object with the appropriate text and timings
+     */
+    private static @NotNull Title getTitle(GemType gemType, String aCase) {
+        Title.Times times = Title.Times.times(
+                Duration.ofMillis(500),
+                Duration.ofSeconds(2),
+                Duration.ofMillis(500)
+        );
+        return Title.title(
+            Component.text(
+                gemType.name().charAt(0) + aCase + " Gem ",
+                NamedTextColor.AQUA
+            ).append(Component.text("crafted!", NamedTextColor.GREEN)),
+            Component.text("It cannot be crafted again!", NamedTextColor.RED),
+            times
         );
     }
 
