@@ -44,19 +44,15 @@ public class PlayerJoinListener implements Listener {
         UUID resourcePackId = UUID.randomUUID();
 
         // Schedule a task to set the resource pack for the player
-        Bukkit.getGlobalRegionScheduler().run(plugin, new Consumer<>() {
-            @Override
-            public void accept(ScheduledTask task) {
-                // Check if the player is online before setting the resource pack
+        Bukkit.getGlobalRegionScheduler().run(plugin, task -> {
+            // Check if the player is online before setting the resource pack
                 if (player.isOnline()) {
                     // Add the resource pack to the player
                     player.addResourcePack(resourcePackId, resourcePackUrl, sha1, prompt, true);
-
                 } else {
                     // Log a warning if the player is not online
                     plugin.getLogger().warning("Player " + player.getName() + " is not online when trying to set resource pack.");
                 }
-            }
         });
     }
 }
