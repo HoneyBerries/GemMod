@@ -1,7 +1,7 @@
 name: GemMod
 version: '1.0'
 main: me.honeyberries.gemMod.GemMod
-api-version: '1.21.5'
+api-version: '1.21.6'
 authors: [ HoneyBerries ]
 description: Plugin for the Gem SMP
 softdepend: [packetevents]
@@ -12,10 +12,18 @@ commands:
     usage: /gem <gem-type> <player (optional)> <amount (optional)>
     permission: gemmod.command.gem
     permission-message: You do not have permission to use this command.
+  gemmod:
+    description: GemMod main command
+    usage: /gemmod reload
+    permission: gemmod.command.gemmod
+    permission-message: You do not have permission to use this command.
 
 permissions:
     gemmod.command.gem:
         description: Allows the player to use the /gem command
+        default: op
+    gemmod.command.gemmod:
+        description: Allows the player to use the /gemmod command
         default: op
     gemmod.cooldown.bypass:
       description: Allows the player to bypass cooldowns

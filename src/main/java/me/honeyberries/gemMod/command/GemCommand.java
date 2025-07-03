@@ -1,7 +1,6 @@
 package me.honeyberries.gemMod.command;
 
 import me.honeyberries.gemMod.GemMod;
-import me.honeyberries.gemMod.configuration.GemModData;
 import me.honeyberries.gemMod.manager.GemManager.GemType;
 import me.honeyberries.gemMod.manager.GemManager;
 import net.kyori.adventure.text.Component;
@@ -37,7 +36,7 @@ public class GemCommand implements TabExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
         // Check permissions for command usage.
-        if (!sender.hasPermission("honeyberries.command.gem")) {
+        if (!sender.hasPermission("gemmod.command.gem")) {
             sender.sendMessage(Component.text("You don't have permission to use this command", NamedTextColor.RED));
             return true;
         }
@@ -45,12 +44,6 @@ public class GemCommand implements TabExecutor {
         // Display the help message if no arguments or "help" is provided.
         if (args.length == 0 || args[0].equalsIgnoreCase("help")) {
             sendHelpMessage(sender);
-            return true;
-        }
-        if (args[0].equalsIgnoreCase("reload")) {
-            // Reload the plugin configuration and recipes
-            GemModData.loadData();
-            sender.sendMessage(Component.text("GemMod configuration reloaded and recipes updated.", NamedTextColor.GREEN));
             return true;
         }
 
@@ -145,12 +138,19 @@ public class GemCommand implements TabExecutor {
         if (args.length == 1) {
             // Suggest available gem types and "help"
             suggestions.addAll(List.of("air", "fire", "water", "earth", "darkness", "ice", "light", "reload", "help"));
+            return suggestions.stream().filter(s -> s.toLowerCase().startsWith(args[0].toLowerCase())).toList();
         }
-        if (args.length == 2) {
+        else if (args.length == 2) {
             // Suggest player names
             suggestions.addAll(Bukkit.getOnlinePlayers().stream().map(Player::getName).toList());
+            return suggestions.stream().filter(s -> s.toLowerCase().startsWith(args[1].toLowerCase())).toList();
         }
-        return suggestions.stream().filter(s -> s.toLowerCase().startsWith(args[args.length - 1].toLowerCase())).toList();
+        else if (args.length == 3) {
+            // Suggest common amounts
+            suggestions.add("<amount>");
+            return suggestions;
+        }
+        return suggestions;
     }
 
 
@@ -165,8 +165,6 @@ public class GemCommand implements TabExecutor {
                 .append(Component.text(" - Give a gem to a player", NamedTextColor.GOLD)));
         sender.sendMessage(Component.text("/gem help", NamedTextColor.AQUA)
                 .append(Component.text(" - Show this help message", NamedTextColor.GOLD)));
-        sender.sendMessage(Component.text("/gem reload", NamedTextColor.AQUA)
-                .append(Component.text(" - Reload the plugin configuration", NamedTextColor.GOLD)));
         sender.sendMessage(Component.text("Available gem types: air, fire, water, earth, darkness, ice, light", NamedTextColor.GREEN));
     }
 }
