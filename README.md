@@ -4,7 +4,7 @@
 [![Version](https://img.shields.io/badge/Version-1.0.0-brightgreen.svg)](https://github.com/HoneyBerries/GemMod/releases)
 [![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen.svg)](https://github.com/HoneyBerries/GemMod/actions)
 
-A feature-rich Minecraft plugin for Paper/Folia 1.21.5+ that introduces magical gems with unique abilities for players. Perfect for SMPs and custom servers seeking new gameplay mechanics!
+A feature-rich Minecraft plugin for Paper/Folia 1.21.7+ that introduces magical gems with unique abilities for players. Perfect for SMPs and custom servers seeking new gameplay mechanics!
 
 ## Table of Contents
 
