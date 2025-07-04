@@ -42,7 +42,11 @@ public class GemModData {
      */
     private static final Object fileLock = new Object();
 
-
+    /**
+     * Loads the gem data from the data.yml file.
+     * This method initializes the data file, loads the configuration, and updates the gem-crafted map.
+     * It also removes existing recipes and registers new ones based on the loaded data.
+     */
     public static void loadData() {
         synchronized (fileLock) {
             // Initialize file and config
@@ -79,6 +83,7 @@ public class GemModData {
 
     /**
      * Sets the gem-crafted status in the configuration.
+     * Updates the in-memory map and saves the change to the data.yml file.
      *
      * @param type    the gem type
      * @param crafted the crafted status
@@ -103,7 +108,6 @@ public class GemModData {
         }
     }
 
-
     /**
      * Saves the current configuration to the data.yml file.
      * If the save fails, a warning message is logged.
@@ -114,8 +118,7 @@ public class GemModData {
             try {
                 yamlConfig.save(dataFile);
             } catch (IOException e) {
-                e.printStackTrace();
-                plugin.getLogger().severe("Failed to save configuration file.");
+                plugin.getLogger().severe("Failed to save configuration file: " + e.getMessage());
             }
         }
     }
@@ -146,6 +149,7 @@ public class GemModData {
     /**
      * Updates the gem crafted map with values from the provided map.
      * This method is thread-safe as it uses ConcurrentHashMap's thread-safe operations.
+     * Saves all changes to the configuration file.
      *
      * @param newGemCraftedMap the map containing new values to set
      */
@@ -163,6 +167,4 @@ public class GemModData {
             saveConfig();
         }
     }
-
-
 }
