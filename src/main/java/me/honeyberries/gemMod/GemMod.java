@@ -59,7 +59,7 @@ public final class GemMod extends JavaPlugin {
     public void onLoad() {
         try {
             // Initialize the PacketEvents API
-
+            getLogger().info("Initializing PacketEvents API...");
             PacketEvents.setAPI(SpigotPacketEventsBuilder.build(this));
             PacketEventsSettings settings = PacketEvents.getAPI().getSettings();
 
@@ -131,10 +131,7 @@ public final class GemMod extends JavaPlugin {
      * </ul>
      */
     private void registerCommands() {
-
-
-
-
+        getLogger().info("Registering commands...");
         try {
             // Register the /gemmod command
             getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS,
@@ -250,6 +247,7 @@ commands -> {
      * </ul>
      */
     private void scheduleTasks() {
+        getLogger().info("Scheduling recurring tasks...");
         try {
             getLogger().info("Starting Earth Gem task...");
             EarthGemTask.startEarthGemTask();

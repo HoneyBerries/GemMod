@@ -35,47 +35,61 @@ public class GemCommand {
 
     // Defines the main /gem command structure.
     private static final LiteralArgumentBuilder<CommandSourceStack> command = Commands.literal("gem")
-        // Restricts the command to users with the "gemmod.command.gem" permission.
         .requires(source -> source.getSender().hasPermission("gemmod.command.gem"))
-        // Default execution of the command, displays a help message.
         .executes(ctx -> {
             sendHelp(ctx.getSource());
             return Command.SINGLE_SUCCESS;
         })
-        // Adds a "help" subcommand to display help information.
         .then(Commands.literal("help")
             .executes(ctx -> {
                 sendHelp(ctx.getSource());
                 return Command.SINGLE_SUCCESS;
             }))
-        // Adds arguments for gem type, player, and amount.
         .then(Commands.argument("gem-type", StringArgumentType.word())
-            // Provides suggestions for gem types.
             .suggests((ctx, builder) -> {
                 for (String type : new String[]{"air", "fire", "water", "earth", "darkness", "ice", "light"}) {
                     builder.suggest(type);
                 }
                 return builder.buildFuture();
             })
-            // Executes the command with only gem type specified.
-            .executes(ctx -> giveGem(ctx, null, 1))
-            // Adds an optional player argument.
-            .then(Commands.argument("player", StringArgumentType.string())
-                // Provides suggestions for online player names.
+            .executes(ctx -> {
+                Player senderPlayer = ctx.getSource().getSender() instanceof Player p ? p : null;
+                if (senderPlayer == null) {
+                    ctx.getSource().getSender().sendMessage(Component.text("Console must specify a player.", NamedTextColor.RED));
+                    return Command.SINGLE_SUCCESS;
+                }
+                giveGem(ctx, senderPlayer, 1);
+                return Command.SINGLE_SUCCESS;
+            })
+            .then(Commands.argument("player", StringArgumentType.word())
                 .suggests((ctx, builder) -> {
                     Bukkit.getOnlinePlayers().forEach(p -> builder.suggest(p.getName()));
                     return builder.buildFuture();
                 })
-                // Executes the command with gem type and player specified.
-                .executes(ctx -> giveGem(ctx, ctx.getArgument("player", String.class), 1))
-                // Adds an optional amount argument.
+                .executes(ctx -> {
+                    String playerName = ctx.getArgument("player", String.class);
+                    Player target = Bukkit.getPlayerExact(playerName);
+                    if (target == null) {
+                        ctx.getSource().getSender().sendMessage(Component.text("Player not found: " + playerName, NamedTextColor.RED));
+                        sendHelp(ctx.getSource());
+                        return Command.SINGLE_SUCCESS;
+                    }
+                    giveGem(ctx, target, 1);
+                    return Command.SINGLE_SUCCESS;
+                })
                 .then(Commands.argument("amount", IntegerArgumentType.integer(1))
-                    // Executes the command with gem type, player, and amount specified.
-                    .executes(ctx -> giveGem(
-                        ctx,
-                        ctx.getArgument("player", String.class),
-                        ctx.getArgument("amount", Integer.class)
-                    ))
+                    .executes(ctx -> {
+                        String playerName = ctx.getArgument("player", String.class);
+                        Player target = Bukkit.getPlayerExact(playerName);
+                        if (target == null) {
+                            ctx.getSource().getSender().sendMessage(Component.text("Player not found: " + playerName, NamedTextColor.RED));
+                            sendHelp(ctx.getSource());
+                            return Command.SINGLE_SUCCESS;
+                        }
+                        int amount = ctx.getArgument("amount", Integer.class);
+                        giveGem(ctx, target, amount);
+                        return Command.SINGLE_SUCCESS;
+                    })
                 )
             ));
 
@@ -83,30 +97,13 @@ public class GemCommand {
      * Handles the logic for giving gems to a player.
      *
      * @param ctx The command context.
-     * @param playerName The name of the target player (optional).
+     * @param player The target player.
      * @param amount The number of gems to give.
-     * @return Command execution result (success or failure).
      */
-    private static int giveGem(CommandContext<CommandSourceStack> ctx, String playerName, int amount) {
+    private static void giveGem(CommandContext<CommandSourceStack> ctx, Player player, int amount) {
         CommandSourceStack source = ctx.getSource();
         CommandSender sender = source.getSender();
         String gemTypeStr = ctx.getArgument("gem-type", String.class).toLowerCase();
-
-        // Determine the target player.
-        Player target;
-        if (playerName != null) {
-            target = Bukkit.getPlayerExact(playerName);
-            if (target == null) {
-                sender.sendMessage(Component.text("Player not found: " + playerName, NamedTextColor.RED));
-                sendHelp(source);
-                return 0;
-            }
-        } else if (sender instanceof Player p) {
-            target = p;
-        } else {
-            sender.sendMessage(Component.text("Console must specify a player.", NamedTextColor.RED));
-            return 0;
-        }
 
         // Validate the gem type.
         GemType gemType;
@@ -115,14 +112,13 @@ public class GemCommand {
         } catch (IllegalArgumentException e) {
             sender.sendMessage(Component.text("Invalid gem type: " + gemTypeStr, NamedTextColor.RED));
             sendHelp(source);
-            return 0;
+            return;
         }
 
         // Add the gem to the target player's inventory.
-        target.getInventory().addItem(GemManager.createGem(gemType, amount));
-        sender.sendMessage(Component.text(String.format("Given %d %s Gem(s) to %s", amount, capitalize(gemTypeStr), target.getName()), NamedTextColor.GREEN));
-        GemMod.getInstance().getLogger().info(String.format("%s gave %d %s Gem(s) to %s", sender.getName(), amount, gemTypeStr, target.getName()));
-        return Command.SINGLE_SUCCESS;
+        player.getInventory().addItem(GemManager.createGem(gemType, amount));
+        sender.sendMessage(Component.text(String.format("Given %d %s Gem(s) to %s", amount, capitalize(gemTypeStr), player.getName()), NamedTextColor.GREEN));
+        GemMod.getInstance().getLogger().info(String.format("%s gave %d %s Gem(s) to %s", sender.getName(), amount, gemTypeStr, player.getName()));
     }
 
     /**
