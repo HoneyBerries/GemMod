@@ -3,14 +3,16 @@ package me.honeyberries.gemMod;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.settings.PacketEventsSettings;
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
+import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import me.honeyberries.gemMod.command.GemCommand;
+import me.honeyberries.gemMod.command.GemModCommand;
 import me.honeyberries.gemMod.configuration.GemModData;
 import me.honeyberries.gemMod.listener.*;
 import me.honeyberries.gemMod.task.*;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.plugin.java.JavaPlugin;
-import java.util.Objects;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
@@ -125,12 +127,33 @@ public final class GemMod extends JavaPlugin {
      * </p>
      * <ul>
      *   <li><b>/gem</b> command: Main command for gem-related operations</li>
+     *   <li><b>/gemmod</b> command: Command for managing gem mod settings and features</li>
      * </ul>
      */
     private void registerCommands() {
+
+
+
+
+        try {
+            // Register the /gemmod command
+            getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS,
+                    commands -> {
+            commands.registrar().register(GemModCommand.getBuildCommand());
+            });
+            getLogger().info("Registered /gemmod command");
+            setFeatureEnabled("gemmodCommand", true);
+        } catch (Exception e) {
+            getLogger().log(Level.SEVERE, "Failed to register /gemmod command", e);
+            setFeatureEnabled("gemmodCommand", false);
+        }
+
         try {
             // Register the /gem command with the GemCommand executor
-            Objects.requireNonNull(getCommand("gem")).setExecutor(new GemCommand());
+            getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS,
+commands -> {
+                commands.registrar().register(GemCommand.getBuildCommand());
+            });
             getLogger().info("Registered /gem command");
             setFeatureEnabled("gemCommand", true);
         } catch (Exception e) {
@@ -220,9 +243,10 @@ public final class GemMod extends JavaPlugin {
      * This includes tasks for:
      * </p>
      * <ul>
-     *   <li>Earth Gem: Monitoring and applying resistance effects</li>
-     *   <li>Fire Gem: Handling fireball mechanics</li>
+     *   <li>Earth Gem: Monitoring and applying various beneficial effects</li>
+     *   <li>Fire Gem: Handling fire resistance mechanics</li>
      *   <li>Light Gem: Managing glowing effects on players</li>
+     *   <li>Water Gem: Handling water breathing and dolphin's grace</li>
      * </ul>
      */
     private void scheduleTasks() {
@@ -242,6 +266,16 @@ public final class GemMod extends JavaPlugin {
         } catch (Exception e) {
             getLogger().log(Level.SEVERE, "Failed to start Fire Gem task", e);
             setFeatureEnabled("fireGem", false);
+        }
+
+
+        try {
+            getLogger().info("Starting Water Gem task...");
+            WaterGemTask.startWaterGemTask();
+            setFeatureEnabled("waterGem", true);
+        } catch (Exception e) {
+            getLogger().log(Level.SEVERE, "Failed to start Water Gem task", e);
+            setFeatureEnabled("waterGem", false);
         }
 
         if (isFeatureEnabled("packetEvents")) {
