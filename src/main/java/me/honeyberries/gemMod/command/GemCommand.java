@@ -16,7 +16,9 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+
 import java.util.Locale;
+import java.util.stream.Stream;
 
 /**
  * This class defines the /gem command using the Brigadier API.
@@ -45,11 +47,11 @@ public class GemCommand {
                 sendHelp(ctx.getSource());
                 return Command.SINGLE_SUCCESS;
             }))
-        .then(Commands.argument("gem-type", StringArgumentType.word())
+        .then(Commands.argument("gem-type", StringArgumentType.string())
             .suggests((ctx, builder) -> {
-                for (String type : new String[]{"air", "fire", "water", "earth", "darkness", "ice", "light"}) {
-                    builder.suggest(type);
-                }
+                Stream.of("air", "fire", "water", "earth", "darkness", "ice", "light")
+                    .filter(p -> p.toLowerCase().startsWith(builder.getRemaining().toLowerCase(Locale.ROOT)))
+                    .forEach(builder::suggest);
                 return builder.buildFuture();
             })
             .executes(ctx -> {
@@ -63,7 +65,10 @@ public class GemCommand {
             })
             .then(Commands.argument("player", StringArgumentType.word())
                 .suggests((ctx, builder) -> {
-                    Bukkit.getOnlinePlayers().forEach(p -> builder.suggest(p.getName()));
+                    Bukkit.getOnlinePlayers().stream()
+                        .map(Player::getName)
+                        .filter(name -> name.toLowerCase().startsWith(builder.getRemaining().toLowerCase(Locale.ROOT)))
+                        .forEach(builder::suggest);
                     return builder.buildFuture();
                 })
                 .executes(ctx -> {

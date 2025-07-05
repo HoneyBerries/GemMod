@@ -34,6 +34,7 @@ import java.util.logging.Level;
  *   <li><b>Earth Gem:</b> Resistance boost</li>
  *   <li><b>Fire Gem:</b> Fireball projectile</li>
  *   <li><b>Light Gem:</b> Lightning strike</li>
+ *   <li><b>Water Gem:</b> Freeze ability</li>
  * </ul>
  *
  * @author HoneyBerries
@@ -110,6 +111,9 @@ public class GemUsageListener implements Listener {
                 break;
             case LIGHT:
                 AbilityManager.handleLightGemAbility(player);
+                break;
+            case WATER:
+                AbilityManager.handleWaterGemAbility(player);
                 break;
             default:
                 plugin.getLogger().log(Level.SEVERE, "Unknown gem type: " + mainHandGem);
