@@ -7,6 +7,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.util.TriState;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.entity.Fireball;
 import org.bukkit.entity.LivingEntity;
@@ -22,7 +23,7 @@ import java.util.logging.Logger;
  * <b>AbilityManager</b> is responsible for executing the special abilities associated with different gem types.
  * </p>
  * <ul>
- *   <li><b>Air Gem:</b> Provides a velocity boost (double jump)</li>
+ *   <li><b>Air Gem:</b> Provides a velocity boost</li>
  *   <li><b>Darkness Gem:</b> Grants temporary invisibility and hides equipment</li>
  *   <li><b>Earth Gem:</b> Grants temporary invulnerability through resistance effect</li>
  *   <li><b>Fire Gem:</b> Launches a powerful fireball projectile</li>
@@ -40,15 +41,17 @@ public class AbilityManager {
     private static final Logger logger = plugin.getLogger();
 
     // Duration of cooldown constants
-    public static final long AIR_COOLDOWN_MILLIS = 15_000; // 30 seconds
-    public static final long DARKNESS_COOLDOWN_MILLIS = 60_000; // 75 seconds
+    public static final long AIR_COOLDOWN_MILLIS = 15_000; // 15 seconds
+    public static final long DARKNESS_COOLDOWN_MILLIS = 60_000; // 60 seconds
     public static final long EARTH_COOLDOWN_MILLIS = 70_000; // 70 seconds
-    public static final long FIREBALL_COOLDOWN_MILLIS = 20_000; // 30 seconds
-    public static final long LIGHT_COOLDOWN_MILLIS = 15_000; // 45 seconds
+    public static final long FIREBALL_COOLDOWN_MILLIS = 20_000; // 20 seconds
+    public static final long LIGHT_COOLDOWN_MILLIS = 30_000; // 30 seconds
+    public static final long WATER_COOLDOWN_MILLIS = 45_000; // 45 seconds
 
     // Duration of ability effects
     public static final int INVISIBILITY_DURATION_TICKS = 15 * 20; // 15 seconds in ticks
     public static final int INVULNERABILITY_DURATION_TICKS = 10 * 20; // 10 seconds in ticks
+    public static final int WATER_FREEZE_DURATION_TICKS = 10 * 20; // 10 seconds in ticks
 
 
     /**
@@ -379,4 +382,76 @@ public class AbilityManager {
         logger.info("Light Gem ability successfully used by " + player.getName() + " on " + targetEntity.getName());
     }
 
+
+    /**
+     * Handles the Water Gem ability, which freezes a targeted player in place for a short duration.
+     * </p>
+     * <ol>
+     *   <li>Checks if the player is on cooldown for the Water Gem ability</li>
+     *   <li>If not on cooldown or if player has bypass permission, checks if the player is targeting another player or mob</li>
+     *   <li>If a valid target is found, teleports the target back to their original location every tick for 10 seconds</li>
+     *   <li>Sets a cooldown for the ability</li>
+     *   <li>Provides feedback to both the caster and the target</li>
+     * </ol>
+     * <p>
+     * <b>Note:</b> The ability requires line of sight to another entity and has a maximum range of 120 blocks.
+     * </p>
+     *
+     * @param player The player using the Water Gem ability
+     */
+    public static void handleWaterGemAbility(Player player) {
+        logger.info("Player " + player.getName() + " attempting to use Water Gem ability");
+        long remainingCooldown = cooldownManager.getRemainingCooldown(player, GemType.WATER);
+        if (remainingCooldown > 0) {
+            long secondsLeft = remainingCooldown / 1000;
+            if (!player.hasPermission("gemmod.cooldown.bypass")) {
+                player.sendMessage(Component.text(String.format("Water Gem is on cooldown! %ds left.", secondsLeft), NamedTextColor.RED));
+                player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+                return;
+            }
+        }
+
+        if (!(player.getTargetEntity(120) instanceof LivingEntity targetEntity)) {
+            player.sendMessage(Component.text("You must be looking at another player/mob to use the Water Gem!", NamedTextColor.RED));
+            return;
+        }
+
+
+        // Schedule all targetEntity operations on its region thread
+        targetEntity.getScheduler().run(plugin, scheduledTask -> {
+            Location tempLocation = targetEntity.getLocation();
+            String targetName = targetEntity.getName();
+
+            ScheduledTask freezeTask = targetEntity.getScheduler().runAtFixedRate(plugin, t -> {
+                targetEntity.teleportAsync(tempLocation);
+            }, null, 1, 1);
+
+            targetEntity.getScheduler().runDelayed(plugin, t -> {
+                assert freezeTask != null;
+                freezeTask.cancel();
+            }, null, INVULNERABILITY_DURATION_TICKS);
+
+            targetEntity.getWorld().playSound(targetEntity.getLocation(), Sound.ENTITY_DOLPHIN_SPLASH, 1.0f, 1.0f);
+
+            if (targetEntity instanceof Player targetPlayer) {
+                targetPlayer.sendMessage(Component.text()
+                    .append(Component.text("You have been frozen by ", NamedTextColor.BLUE))
+                    .append(Component.text(player.getName(), NamedTextColor.GREEN))
+                    .append(Component.text(" for " + (WATER_FREEZE_DURATION_TICKS / 20) + " seconds!", NamedTextColor.BLUE))
+                );
+            }
+
+            // Feedback to the caster (player) can be sent from here, but is safe on player's thread too
+            Bukkit.getGlobalRegionScheduler().run(plugin, t -> {
+                player.sendMessage(Component.text("You froze ", TextColor.fromHexString("#40c7ff"))
+                    .append(Component.text(targetName, NamedTextColor.GREEN))
+                    .append(Component.text(" for " + (WATER_FREEZE_DURATION_TICKS / 20) + " seconds!", TextColor.fromHexString("#41c7ff")))
+                );
+            });
+
+
+        }, null);
+
+        cooldownManager.setCooldown(player, GemType.WATER, WATER_COOLDOWN_MILLIS, true);
+    }
 }
