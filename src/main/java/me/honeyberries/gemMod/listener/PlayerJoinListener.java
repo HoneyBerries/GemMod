@@ -1,58 +1,97 @@
 package me.honeyberries.gemMod.listener;
 
-import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
+import com.destroystokyo.paper.event.player.PlayerConnectionCloseEvent;
+import io.papermc.paper.event.connection.configuration.AsyncPlayerConnectionConfigureEvent;
 import me.honeyberries.gemMod.GemMod;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
+import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.resource.ResourcePackInfo;
+import net.kyori.adventure.resource.ResourcePackRequest;
+import net.kyori.adventure.resource.ResourcePackStatus;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
 
-import java.util.HexFormat;
+import java.net.URI;
+import java.util.Map;
 import java.util.UUID;
-import java.util.function.Consumer;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
-/**
- * Listener class for handling player join events.
- * This class ensures that players are prompted to download and use the GemMod resource pack upon joining the server.
- */
 public class PlayerJoinListener implements Listener {
 
-    // Reference to the main plugin instance
     private final GemMod plugin = GemMod.getInstance();
 
-    /**
-     * Event handler for the PlayerJoinEvent.
-     * When a player joins the server, they are prompted to download and use the GemMod resource pack.
-     *
-     * @param event The PlayerJoinEvent triggered when a player joins the server.
-     */
+    // Track latches for players who are in the process of receiving a resource pack
+    private final Map<UUID, CountDownLatch> latches = new ConcurrentHashMap<>();
+
     @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent event) {
-        Player player = event.getPlayer();
+    public void onPlayerConfig(AsyncPlayerConnectionConfigureEvent event) {
+        Audience audience = event.getConnection().getAudience();
 
-        // URL of the resource pack to be downloaded
-        String resourcePackUrl = "https://honeyberries.net/data/gemmodassets.zip";
+        URI rpURI = URI.create("https://honeyberries.net/data/gemmodassets.zip");
+        String sha1 = "a11dbe3d078cb0e7bcb38492e1d6f8058c2cdac5";
+        UUID rpUUID = UUID.nameUUIDFromBytes(sha1.getBytes());
 
-        // SHA-1 hash of the resource pack for validation
-        byte[] sha1 = HexFormat.of().parseHex("a11dbe3d078cb0e7bcb38492e1d6f8058c2cdac5");
+        CountDownLatch latch = new CountDownLatch(1);
+        AtomicReference<ResourcePackStatus> packStatus = new AtomicReference<>();
+        UUID playerId = event.getConnection().getProfile().getId();
 
-        // Prompt message displayed to the player
-        String prompt = "Please download the GemMod resource pack to enhance your experience.\n Promise no lag! Please install!";
+        // Store latch for early release on disconnect
+        latches.put(playerId, latch);
 
-        // Unique identifier for the resource pack
-        UUID resourcePackId = UUID.randomUUID();
+        ResourcePackInfo rpInfo = ResourcePackInfo.resourcePackInfo()
+                .uri(rpURI)
+                .hash(sha1)
+                .id(rpUUID)
+                .build();
 
-        // Schedule a task to set the resource pack for the player
-        Bukkit.getGlobalRegionScheduler().run(plugin, task -> {
-            // Check if the player is online before setting the resource pack
-                if (player.isOnline()) {
-                    // Add the resource pack to the player
-                    player.addResourcePack(resourcePackId, resourcePackUrl, sha1, prompt, true);
-                } else {
-                    // Log a warning if the player is not online
-                    plugin.getLogger().warning("Player " + player.getName() + " is not online when trying to set resource pack.");
-                }
-        });
+        ResourcePackRequest rpRequest = ResourcePackRequest.resourcePackRequest()
+                .packs(rpInfo)
+                .prompt(Component.text("Please download the resourcepack!").color(NamedTextColor.LIGHT_PURPLE))
+                .replace(false)
+                .required(true)
+                .callback((uuid, status, ignored) -> {
+                    plugin.getLogger().info("Player " + playerId + " resource pack status: " + status);
+                    packStatus.set(status);
+                    latch.countDown();
+                })
+                .build();
+
+        audience.sendResourcePacks(rpRequest);
+
+        try {
+            // Wait up to 10 seconds for the player's response
+            boolean finished = latch.await(10, TimeUnit.SECONDS);
+
+            if (!finished) {
+                plugin.getLogger().warning("Player " + playerId + " did not respond to resource pack request in time.");
+            }
+
+            ResourcePackStatus status = packStatus.get();
+
+            if (status == ResourcePackStatus.DECLINED) {
+                event.getConnection().disconnect(
+                        Component.text("You must accept the GemMod resource pack to play.", NamedTextColor.RED)
+                );
+            } else if (status != null && status != ResourcePackStatus.SUCCESSFULLY_LOADED) {
+                plugin.getLogger().warning("Player " + playerId + " had non-kick resource pack issue: " + status);
+            }
+
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } finally {
+            latches.remove(playerId);
+        }
+    }
+
+    @EventHandler
+    public void onPlayerDisconnect(PlayerConnectionCloseEvent event) {
+        CountDownLatch latch = latches.remove(event.getPlayerUniqueId());
+        if (latch != null) {
+            latch.countDown(); // Release latch early if player disconnects to prevent hanging thread
+        }
     }
 }
