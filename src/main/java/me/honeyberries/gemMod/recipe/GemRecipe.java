@@ -35,6 +35,7 @@ public class GemRecipe {
     public static NamespacedKey earthGemKey = new NamespacedKey(plugin, "earth_gem");
     public static NamespacedKey fireGemKey = new NamespacedKey(plugin, "fire_gem");
     public static NamespacedKey lightGemKey = new NamespacedKey(plugin, "light_gem");
+    public static NamespacedKey waterGemKey = new NamespacedKey(plugin, "water_gem");
 
     /**
      * Registers all gem crafting recipes with the server.
@@ -53,6 +54,7 @@ public class GemRecipe {
                     case EARTH -> registerEarthGemRecipe();
                     case FIRE -> registerFireGemRecipe();
                     case LIGHT -> registerLightGemRecipe();
+                    case WATER -> registerWaterGemRecipe();
                 }
             }
         }
@@ -181,5 +183,30 @@ public class GemRecipe {
 
         // Register the Light Gem recipe with the server
         plugin.getServer().addRecipe(lightGemRecipe);
+    }
+
+
+    /**
+     * Registers the crafting recipe for the Water Gem.
+     * <p>
+     * The recipe uses water buckets, prismarine shards, and a heart of the sea.
+     * It removes any existing recipe with the same key before registering.
+     */
+    private static void registerWaterGemRecipe() {
+        // Remove the old recipe if it exists
+        plugin.getServer().removeRecipe(waterGemKey);
+
+        // Create a new recipe for the Water Gem
+        ShapedRecipe waterGemRecipe = new ShapedRecipe(waterGemKey, GemManager.createGem(GemType.WATER, 1));
+        waterGemRecipe.shape("WCW", "PHP", "WCW");
+
+        // Set the ingredients for the Water Gem recipe
+        waterGemRecipe.setIngredient('W', Material.WET_SPONGE);
+        waterGemRecipe.setIngredient('C', Material.COAST_ARMOR_TRIM_SMITHING_TEMPLATE);
+        waterGemRecipe.setIngredient('P', Material.PRISMARINE_SHARD);
+        waterGemRecipe.setIngredient('H', Material.HEART_OF_THE_SEA);
+
+        // Register the Water Gem recipe with the server
+        plugin.getServer().addRecipe(waterGemRecipe);
     }
 }
