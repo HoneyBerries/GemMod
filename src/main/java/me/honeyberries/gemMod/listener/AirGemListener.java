@@ -9,36 +9,27 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
 
 /**
- * Listener for Air Gem passive effects.
+ * Handles events related to the Air Gem's passive effects.
  *
- * <p>This listener is responsible for:</p>
- * <ul>
- *   <li>Detecting when a player with the Air Gem takes damage</li>
- *   <li>Cancelling fall damage and fly-into-wall damage for those players</li>
- *   <li>Logging the cancellation for debugging purposes</li>
- * </ul>
- *
- * <p>The Air Gem grants players immunity to fall damage and damage from flying into walls,
- * providing a significant mobility advantage.</p>
+ * This listener is responsible for mitigating damage taken by players who possess an Air Gem.
+ * Specifically, it cancels damage from falling and flying into walls, enhancing the user's mobility and safety.
  *
  * @author HoneyBerries
- * @since 1.0
+ * @version 1.0
  */
 public class AirGemListener implements Listener {
 
-    /** Reference to the main plugin instance for logging and plugin operations. */
+    /**
+     * A reference to the main plugin instance, used for logging and other plugin-related operations.
+     */
     private final GemMod plugin = GemMod.getInstance();
 
     /**
-     * Handles player damage events to apply Air Gem passive effects.
+     * Prevents fall and fly-into-wall damage for players holding an Air Gem.
      *
-     * <p>This method:</p>
-     * <ol>
-     *   <li>Checks if the damaged entity is a player</li>
-     *   <li>Verifies if the player has the Air Gem in their inventory</li>
-     *   <li>Cancels the event if the damage cause is {@code FALL} or {@code FLY_INTO_WALL}</li>
-     *   <li>Logs the cancellation for traceability</li>
-     * </ol>
+     * This event handler checks if the damaged entity is a player and if they have an Air Gem
+     * in their inventory. If both conditions are met, and the damage cause is either {@code FALL} or
+     * {@code FLY_INTO_WALL}, the event is cancelled.
      *
      * @param event The {@link EntityDamageEvent} triggered when an entity takes damage.
      */

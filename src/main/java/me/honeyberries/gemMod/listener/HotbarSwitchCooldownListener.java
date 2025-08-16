@@ -9,36 +9,29 @@ import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.ItemStack;
 
 /**
- * Listener for updating the action bar when a player switches hotbar slots or swaps hands.
+ * Handles UI updates related to gem cooldowns when a player switches items.
  *
- * <p>This listener is responsible for:</p>
- * <ul>
- *   <li>Detecting hotbar slot changes</li>
- *   <li>Detecting hand item swaps</li>
- *   <li>Displaying cooldown information for gems in the action bar</li>
- * </ul>
- *
- * <p>It integrates with the {@link CooldownManager} to retrieve and display cooldown data.</p>
+ * This listener monitors hotbar slot changes and hand swaps to display
+ * timely cooldown information in the action bar, ensuring the player is
+ * always aware of their abilities' status.
  *
  * @author HoneyBerries
- * @since 1.0
+ * @version 1.0
  */
 public class HotbarSwitchCooldownListener implements Listener {
 
-    /** Reference to the cooldown manager for handling gem cooldowns. */
+    /**
+     * A reference to the cooldown manager for handling ability cooldowns.
+     */
     private final CooldownManager cooldownManager = CooldownManager.getInstance();
 
     /**
-     * Handles hotbar slot switching to update the action bar with cooldown information.
+     * Updates the action bar with cooldown information when the player switches hotbar slots.
      *
-     * <p>This method:</p>
-     * <ol>
-     *   <li>Detects when a player switches to a new hotbar slot</li>
-     *   <li>Retrieves the item in the new slot</li>
-     *   <li>Updates the action bar with cooldown information if the item is a gem</li>
-     * </ol>
+     * When a player selects a new item in their hotbar, this method checks if the item is
+     * a gem and, if so, updates the action bar to display its current cooldown status.
      *
-     * @param event The {@link PlayerItemHeldEvent} triggered when the player switches hotbar slots
+     * @param event The {@link PlayerItemHeldEvent} triggered upon hotbar slot change.
      */
     @EventHandler
     public void onHotbarSwitch(PlayerItemHeldEvent event) {
@@ -50,16 +43,12 @@ public class HotbarSwitchCooldownListener implements Listener {
     }
 
     /**
-     * Handles swapping items between the main and off hand to update the action bar.
+     * Updates the action bar with cooldown information when the player swaps items between hands.
      *
-     * <p>This method:</p>
-     * <ol>
-     *   <li>Detects when a player swaps items between their main and off hand</li>
-     *   <li>Retrieves the item that will be in the main hand after the swap</li>
-     *   <li>Updates the action bar with cooldown information if the item is a gem</li>
-     * </ol>
+     * When a player swaps items, this method checks the new item in the main hand and updates
+     * the action bar with its cooldown status if it is a gem.
      *
-     * @param event The {@link PlayerSwapHandItemsEvent} triggered when the player swaps hand items
+     * @param event The {@link PlayerSwapHandItemsEvent} triggered upon hand swap.
      */
     @EventHandler
     public void onHandSwitch(PlayerSwapHandItemsEvent event) {

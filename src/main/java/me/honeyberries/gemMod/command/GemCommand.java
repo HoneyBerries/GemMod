@@ -21,21 +21,28 @@ import java.util.Locale;
 import java.util.stream.Stream;
 
 /**
- * This class defines the /gem command using the Brigadier API.
- * The command allows players or the console to give gems to players.
+ * Defines and handles the execution of the /gem command using the Brigadier command framework.
+ *
+ * This command allows authorized users to give gems to players, with options to specify
+ * the gem type, target player, and amount.
+ *
+ * @author HoneyBerries
+ * @version 1.0
  */
 public class GemCommand {
 
     /**
-     * Builds the Brigadier command structure for the /gem command.
+     * Builds and returns the Brigadier command structure for the /gem command.
      *
-     * @return The LiteralCommandNode representing the /gem command.
+     * @return The fully constructed {@link LiteralCommandNode} for the command.
      */
     public static LiteralCommandNode<CommandSourceStack> getBuildCommand() {
         return command.build();
     }
 
-    // Defines the main /gem command structure.
+    /**
+     * Defines the main literal for the /gem command and its subcommands.
+     */
     private static final LiteralArgumentBuilder<CommandSourceStack> command = Commands.literal("gem")
         .requires(source -> source.getSender().hasPermission("gemmod.command.gem"))
         .executes(ctx -> {
@@ -99,10 +106,10 @@ public class GemCommand {
             ));
 
     /**
-     * Handles the logic for giving gems to a player.
+     * Handles the core logic for giving a specified number of gems to a player.
      *
-     * @param ctx The command context.
-     * @param player The target player.
+     * @param ctx    The command context, containing arguments and the command source.
+     * @param player The target player to receive the gems.
      * @param amount The number of gems to give.
      */
     private static void giveGem(CommandContext<CommandSourceStack> ctx, Player player, int amount) {
@@ -127,9 +134,9 @@ public class GemCommand {
     }
 
     /**
-     * Sends the help message for the /gem command.
+     * Sends a formatted help message for the /gem command to the command source.
      *
-     * @param source The command source to send the message to.
+     * @param source The command source to which the help message will be sent.
      */
     private static void sendHelp(CommandSourceStack source) {
         CommandSender sender = source.getSender();
@@ -142,10 +149,10 @@ public class GemCommand {
     }
 
     /**
-     * Capitalizes the first letter of a string.
+     * Capitalizes the first letter of a given string.
      *
      * @param s The string to capitalize.
-     * @return The capitalized string.
+     * @return The capitalized string, or the original string if it is null or empty.
      */
     private static String capitalize(String s) {
         if (s == null || s.isEmpty()) return s;

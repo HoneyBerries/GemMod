@@ -10,28 +10,29 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import me.honeyberries.gemMod.manager.GemManager.GemType;
 
 /**
- * @deprecated This listener is no longer in use and will be removed in a future version.
- * Earth Gem effects are now handled by the EarthGemTask class.
+ * This listener is deprecated and no longer in use.
+ * Earth Gem effects are now managed by the {@link me.honeyberries.gemMod.task.EarthGemTask} class.
+ *
+ * @deprecated Will be removed in a future version.
  */
 @Deprecated(since = "1.0", forRemoval = true)
 public class EarthGemListener implements Listener {
 
     /**
-     * Reference to the main plugin instance
+     * A reference to the main plugin instance.
      */
     private final GemMod plugin = GemMod.getInstance();
 
     /**
-     * Reference to the cooldown manager handling gem cooldowns
+     * A reference to the cooldown manager for handling gem cooldowns.
      */
     private final CooldownManager cooldownManager = CooldownManager.getInstance();
 
     /**
-     * Handles the EntityDamageEvent for players holding the Earth Gem.
-     * Cancels damage if the player is holding the Earth Gem and its cooldown is active.
+     * Handles the {@link EntityDamageEvent} for players holding the Earth Gem.
+     * This method is deprecated and should not be used.
      *
-     * @param event The EntityDamageEvent triggered when an entity takes damage.
-     * @deprecated This method is no longer in use and will be removed in a future version.
+     * @param event The {@link EntityDamageEvent} triggered when an entity takes damage.
      */
     @Deprecated(since = "1.0", forRemoval = true)
     @EventHandler()

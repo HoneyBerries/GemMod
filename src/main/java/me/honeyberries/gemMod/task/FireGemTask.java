@@ -9,37 +9,26 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 /**
- * Handles the passive ability of the Fire Gem, which grants fire resistance to its holder.
+ * Manages the passive effects of the Fire Gem by granting fire resistance to its holder.
  *
- * <p>The Fire Gem provides two abilities:</p>
- * <ul>
- *   <li><b>Active ability:</b> Launch a powerful fireball (handled by {@code AbilityManager})</li>
- *   <li><b>Passive ability:</b> Grants continuous fire resistance to the player holding the gem (handled by this class)</li>
- * </ul>
- *
- * <p>The passive effect ensures that players with the Fire Gem are immune to fire and lava damage,
- * enhancing their survivability in hazardous environments. The effect is reapplied every tick to
- * guarantee uninterrupted protection.</p>
+ * This task runs periodically to ensure that any player holding a Fire Gem
+ * receives a continuous fire resistance effect, protecting them from fire and lava damage.
  *
  * @author HoneyBerries
- * @since 1.0
+ * @version 1.0
  */
 public class FireGemTask {
 
-    /** Reference to the main plugin instance. */
+    /**
+     * A reference to the main plugin instance.
+     */
     private static final GemMod plugin = GemMod.getInstance();
 
     /**
-     * Starts the Fire Gem passive effect recurring task.
+     * Starts a recurring task that grants fire resistance to players holding a Fire Gem.
      *
-     * <p>This method schedules a task that runs every tick (1 tick delay, 1 tick interval) and:</p>
-     * <ol>
-     *   <li>Checks all online players to see who has a Fire Gem in their inventory</li>
-     *   <li>For players with the Fire Gem, applies a Fire Resistance potion effect (duration: 15 seconds)</li>
-     *   <li>Effect is reapplied every tick to ensure it never expires</li>
-     * </ol>
-     *
-     * <p>The potion effect is applied on the player's region thread for thread safety.</p>
+     * The task runs every tick to check all online players. If a player has a
+     * Fire Gem, it applies a fire resistance effect to them.
      */
     public static void startFireGemTask() {
         plugin.getServer().getGlobalRegionScheduler().runAtFixedRate(plugin, scheduledTask -> {

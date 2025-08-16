@@ -17,50 +17,39 @@ import org.bukkit.util.Vector;
 import java.util.logging.Logger;
 
 /**
- * Listener for Darkness Gem passive effects when attacking other players.
+ * Handles the passive effects of the Darkness Gem when attacking other players.
  *
- * <p>This class handles the passive effect of the Darkness Gem, which is separate from its
- * active ability (invisibility). When a player with the Darkness Gem in their inventory
- * attacks another player, this listener:</p>
- * <ul>
- *   <li>Applies a blindness effect to the attacked player</li>
- *   <li>Creates a dense cloud of black particles in front of the attacked player's view</li>
- *   <li>Maintains these effects for a short duration</li>
- * </ul>
- *
- * <p>This creates a "blinding" effect that obscures the attacked player's vision,
- * giving the attacker a tactical advantage.</p>
+ * This listener triggers when a player holding a Darkness Gem attacks another player,
+ * applying a blinding effect that includes both a potion effect and a particle-based visual obstruction.
  *
  * @author HoneyBerries
- * @since 1.0
+ * @version 1.0
  */
 public class DarknessGemListener implements Listener {
 
-    /** Reference to the main plugin instance. */
+    /**
+     * A reference to the main plugin instance.
+     */
     private final GemMod plugin = GemMod.getInstance();
 
-    /** Logger for recording events related to the Darkness Gem passive effect. */
+    /**
+     * Logger for recording events related to the Darkness Gem's passive effect.
+     */
     private final Logger logger = plugin.getLogger();
 
-    /** Duration of the Darkness Gem Passive Effect in ticks */
-    private final Integer DARKNESS_GEM_PASSIVE_EFFECT_DURATION = 5 * 20; // 5 seconds in ticks
+    /**
+     * The duration of the Darkness Gem's passive effect, in ticks. (5 seconds)
+     */
+    private final Integer DARKNESS_GEM_PASSIVE_EFFECT_DURATION = 5 * 20;
 
     /**
-     * Handles player-to-player attack events for Darkness Gem passive effect.
+     * Applies the Darkness Gem's blinding effect when a player is attacked by a gem holder.
      *
-     * <p>This method is triggered when a player attacks another player. If the attacker
-     * has the Darkness Gem in their inventory, this method:</p>
-     * <ol>
-     *   <li>Applies a level 1 blindness effect to the damaged player for 5 seconds (100 ticks)</li>
-     *   <li>Creates a repeating task that spawns black particles in front of the damaged player's view</li>
-     *   <li>Maintains the particle effect for 5 seconds</li>
-     *   <li>Logs the application of the effect</li>
-     * </ol>
+     * When a player with a Darkness Gem attacks another player, this method applies a
+     * {@link PotionEffectType#BLINDNESS} effect and spawns a dense cloud of black particles
+     * in front of the victim's view, severely impairing their vision for a short duration.
      *
-     * <p>The particle effect creates a dense cloud that significantly impairs the damaged player's
-     * vision, making it difficult for them to see and fight back effectively.</p>
-     *
-     * @param event The EntityDamageByEntityEvent triggered when an entity is damaged by another entity.
+     * @param event The {@link EntityDamageByEntityEvent} triggered upon entity damage.
      */
     @EventHandler
     public void onPlayerAttack(EntityDamageByEntityEvent event) {

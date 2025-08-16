@@ -10,13 +10,19 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
 /**
- * This class defines the GemMod command using the Brigadier API.
- * The command provides functionality for reloading the plugin configuration
- * and displaying help information.
+ * Defines and handles the execution of the /gemmod command using the Brigadier command framework.
+ *
+ * This command provides administrative functionalities, such as reloading the plugin's configuration
+ * and displaying a help message.
+ *
+ * @author HoneyBerries
+ * @version 1.0
  */
 public class GemModCommand {
 
-    // Defines the main "gemmod" command structure.
+    /**
+     * Defines the main literal for the /gemmod command and its subcommands.
+     */
     private static final LiteralArgumentBuilder<CommandSourceStack> command = Commands.literal("gemmod")
             // Restricts the command to users with the "gemmod.command.gemmod" permission.
             .requires(source -> source.getSender().hasPermission("gemmod.command.gemmod"))
@@ -47,9 +53,9 @@ public class GemModCommand {
                 }));
 
     /**
-     * Retrieves the built command node for registration.
+     * Builds and returns the Brigadier command structure for the /gemmod command.
      *
-     * @return The LiteralCommandNode representing the "gemmod" command.
+     * @return The fully constructed {@link LiteralCommandNode} for the command.
      */
     public static LiteralCommandNode<CommandSourceStack> getBuildCommand() {
         return command.build();

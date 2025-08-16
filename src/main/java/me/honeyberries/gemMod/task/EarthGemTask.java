@@ -10,43 +10,36 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 /**
- * Handles the passive ability of the Earth Gem, which grants Haste to its holder.
+ * Manages the passive effects of the Earth Gem by granting beneficial potion effects to its holder.
  *
- * <p>The Earth Gem provides two abilities:</p>
- * <ul>
- *   <li><b>Active ability:</b> Temporary invulnerability (handled by {@code AbilityManager})</li>
- *   <li><b>Passive ability:</b> Grants continuous Haste to the player holding the gem (handled by this class)</li>
- * </ul>
- *
- * <p>The passive effect ensures that players with the Earth Gem mine and break blocks faster,
- * improving their efficiency. The effect is reapplied every tick to guarantee uninterrupted
- * Haste as long as the player holds the gem.</p>
+ * This task runs periodically to ensure that any player holding an Earth Gem
+ * receives continuous Haste, Speed, and Strength effects.
  *
  * @author HoneyBerries
- * @since 1.0
+ * @version 1.0
  */
 public class EarthGemTask {
 
-    /** Reference to the main plugin instance. */
+    /**
+     * A reference to the main plugin instance.
+     */
     private static final Plugin plugin = GemMod.getInstance();
 
-    /** Duration of the potion effect in ticks (15 seconds). */
+    /**
+     * The duration of the potion effects, in ticks (15 seconds).
+     */
     private static final int POTION_DURATION_TICKS = 15 * 20;
 
-    /** Amplifier for the potion effect (level 2). */
+    /**
+     * The amplifier for the potion effects (level 2).
+     */
     private static final int POTION_AMPLIFIER = 1;
 
     /**
-     * Starts the Earth Gem passive effect recurring task.
+     * Starts a recurring task that grants passive effects to players holding an Earth Gem.
      *
-     * <p>This method schedules a task that runs every tick (1 tick delay, 1 tick interval) and:</p>
-     * <ol>
-     *   <li>Checks all online players to see who has an Earth Gem in their inventory</li>
-     *   <li>For players with the Earth Gem, applies a Haste potion effect (duration: 15 seconds, amplifier: 1)</li>
-     *   <li>Effect is reapplied every tick to ensure it never expires</li>
-     * </ol>
-     *
-     * <p>The potion effect is applied on the player's region thread for thread safety.</p>
+     * The task runs every tick to check all online players. If a player has an
+     * Earth Gem, it applies Haste, Speed, and Strength effects to them.
      */
     public static void startEarthGemTask() {
         plugin.getServer().getGlobalRegionScheduler().runAtFixedRate(plugin, scheduledTask -> {
@@ -59,9 +52,11 @@ public class EarthGemTask {
     }
 
     /**
-     * Applies the Haste, Speed, and Strength potion effect to the specified player on their region thread.
+     * Applies Haste, Speed, and Strength potion effects to the specified player.
      *
-     * @param player The player to apply the effect to.
+     * The effects are applied on the player's region thread to ensure thread safety.
+     *
+     * @param player The player to whom the effects will be applied.
      */
     private static void applyEarthPotionEffect(Player player) {
         player.getScheduler().run(plugin, scheduledPlayerTask -> {
