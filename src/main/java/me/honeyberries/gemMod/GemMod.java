@@ -13,16 +13,19 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.io.InputStream;
+import java.net.URI;
+import java.security.MessageDigest;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
 /**
  * Main class for the GemMod plugin.
- *
+ * <p>
  * This plugin introduces a variety of magical gems into Minecraft, each granting unique abilities to players.
  * It handles the plugin's lifecycle, including command registration, event listeners, and task scheduling.
- *
+ * <p>
  * The available gems and their features include:
  * <ul>
  *   <li><b>Air Gem:</b> Provides a powerful velocity boost, allowing for a double jump-like ability.</li>
@@ -44,6 +47,35 @@ public final class GemMod extends JavaPlugin {
      * This allows for dynamic feature management and debugging.
      */
     private final Map<String, Boolean> enabledFeatures = new ConcurrentHashMap<>();
+    private String resourcePackSha1;
+    private static final String RESOURCE_PACK_URL = "https://honeyberries.net/data/gemmodassets.zip";
+
+    /**
+     * Computes the SHA-1 hash of the resource pack at the given URL.
+     */
+    private String computeResourcePackSha1() {
+        try (InputStream in = URI.create(RESOURCE_PACK_URL).toURL().openStream()) {
+            MessageDigest digest = MessageDigest.getInstance("SHA-1");
+            byte[] buffer = new byte[8192];
+            int read;
+            while ((read = in.read(buffer)) > 0) {
+                digest.update(buffer, 0, read);
+            }
+            byte[] sha1Bytes = digest.digest();
+            StringBuilder sb = new StringBuilder();
+            for (byte b : sha1Bytes) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
+        } catch (Exception e) {
+            getLogger().severe("Failed to compute SHA-1 for resource pack: " + e.getMessage());
+            return null;
+        }
+    }
+
+    public String getResourcePackSha1() {
+        return resourcePackSha1;
+    }
 
     /**
      * Called when the plugin is loaded.
@@ -72,13 +104,21 @@ public final class GemMod extends JavaPlugin {
 
     /**
      * Called when the plugin is enabled.
-     *
+     * <p>
      * Initializes the plugin by loading configuration, registering commands, event listeners,
      * and scheduling recurring tasks.
      */
     @Override
     public void onEnable() {
         getLogger().info("\n---------- GemMod Enabled ----------\n");
+
+        // Compute SHA-1 for resource pack
+        resourcePackSha1 = computeResourcePackSha1();
+        if (resourcePackSha1 != null) {
+            getLogger().info("Resource pack SHA-1: " + resourcePackSha1);
+        } else {
+            getLogger().warning("Resource pack SHA-1 could not be determined. Resource pack enforcement may fail.");
+        }
 
         // Load configuration data
         try {
@@ -154,7 +194,7 @@ commands -> {
 
     /**
      * Registers all event listeners for the plugin.
-     *
+     * <p>
      * This includes listeners for general gameplay events, such as gem usage and cooldowns,
      * as well as specific listeners for each gem's unique abilities.
      */

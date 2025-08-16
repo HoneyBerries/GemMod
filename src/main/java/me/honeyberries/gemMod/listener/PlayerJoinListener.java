@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Handles events related to player connections, specifically for managing resource pack distribution.
- *
+ * <p>
  * This listener ensures that players are prompted to download the required resource pack upon joining
  * and handles their response. If a player disconnects during this process, it gracefully cleans up resources.
  *
@@ -32,6 +32,9 @@ import java.util.concurrent.atomic.AtomicReference;
 public class PlayerJoinListener implements Listener {
 
     private final GemMod plugin = GemMod.getInstance();
+
+    public PlayerJoinListener() {
+    }
 
     /**
      * Tracks latches for players who are in the process of receiving a resource pack.
@@ -52,7 +55,11 @@ public class PlayerJoinListener implements Listener {
         Audience audience = event.getConnection().getAudience();
 
         URI rpURI = URI.create("https://honeyberries.net/data/gemmodassets.zip");
-        String sha1 = "a11dbe3d078cb0e7bcb38492e1d6f8058c2cdac5";
+        String sha1 = plugin.getResourcePackSha1();
+        if (sha1 == null) {
+            plugin.getLogger().warning("Resource pack SHA-1 is not available. Skipping resource pack enforcement.");
+            return;
+        }
         UUID rpUUID = UUID.nameUUIDFromBytes(sha1.getBytes());
 
         CountDownLatch latch = new CountDownLatch(1);
@@ -70,11 +77,14 @@ public class PlayerJoinListener implements Listener {
 
         ResourcePackRequest rpRequest = ResourcePackRequest.resourcePackRequest()
                 .packs(rpInfo)
-                .prompt(Component.text("Please download the resourcepack!").color(NamedTextColor.LIGHT_PURPLE))
+                .prompt(Component.text()
+                    .append(Component.text("Please Download this Resource Pack.\n").color(NamedTextColor.AQUA))
+                    .append(Component.text("It Will Make Your Experience Much Better\n").color(NamedTextColor.GOLD))
+                    .append(Component.text("Trust :)").color(NamedTextColor.LIGHT_PURPLE))
+                    .build())
                 .replace(false)
                 .required(true)
                 .callback((uuid, status, ignored) -> {
-                    plugin.getLogger().info("Player " + playerId + " resource pack status: " + status);
                     packStatus.set(status);
                     latch.countDown();
                 })
@@ -83,23 +93,25 @@ public class PlayerJoinListener implements Listener {
         audience.sendResourcePacks(rpRequest);
 
         try {
-            // Wait up to 10 seconds for the player's response.
-            boolean finished = latch.await(10, TimeUnit.SECONDS);
+            // Wait up to 60 seconds for the player's response.
+            boolean finished = latch.await(60, TimeUnit.SECONDS);
 
             if (!finished) {
                 plugin.getLogger().warning("Player " + playerId + " did not respond to resource pack request in time.");
+                event.getConnection().disconnect(
+                        Component.text("Timed out waiting for resource pack response.", NamedTextColor.RED)
+                );
+                return;
             }
 
             ResourcePackStatus status = packStatus.get();
 
+            // Kick the player if they declined the pack.
             if (status == ResourcePackStatus.DECLINED) {
                 event.getConnection().disconnect(
-                        Component.text("You must accept the GemMod resource pack to play.", NamedTextColor.RED)
+                        Component.text("You must accept the GemMod resource pack to play, sorry :(.", NamedTextColor.RED)
                 );
-            } else if (status != null && status != ResourcePackStatus.SUCCESSFULLY_LOADED) {
-                plugin.getLogger().warning("Player " + playerId + " had non-kick resource pack issue: " + status);
             }
-
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         } finally {
@@ -109,7 +121,7 @@ public class PlayerJoinListener implements Listener {
 
     /**
      * Handles player disconnections to clean up any pending resource pack latches.
-     *
+     * <p>
      * If a player disconnects while the resource pack is being processed, this method
      * releases the corresponding latch to prevent the main thread from hanging.
      *
