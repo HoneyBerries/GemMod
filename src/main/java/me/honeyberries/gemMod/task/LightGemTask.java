@@ -17,40 +17,34 @@ import java.util.List;
 import java.util.logging.Logger;
 
 /**
- * Manages the passive ability of the Light Gem, which makes other players glow.
+ * Manages the passive glowing effect of the Light Gem.
  *
- * <p>The Light Gem provides two abilities:</p>
- * <ul>
- *   <li><b>Active ability:</b> Strike a targeted player with lightning (handled by {@code AbilityManager})</li>
- *   <li><b>Passive ability:</b> Make all other players glow with an aqua outline (handled by this class)</li>
- * </ul>
- *
- * <p>The passive ability allows the Light Gem holder to see other players through walls and at a distance,
- * providing enhanced awareness of player positions. The glowing effect is only visible to the player holding
- * the Light Gem and does not affect gameplay for others.</p>
+ * This task runs periodically to give players holding a Light Gem the ability
+ * to see other players through walls by applying a glowing effect that is only
+ * visible to them.
  *
  * @author HoneyBerries
- * @since 1.0
+ * @version 1.0
  */
 public class LightGemTask {
 
-    /** Reference to the main plugin instance. */
+    /**
+     * A reference to the main plugin instance.
+     */
     private static final GemMod plugin = GemMod.getInstance();
 
-    /** Logger for recording events related to the Light Gem passive effect. */
+    /**
+     * Logger for recording events related to the Light Gem's passive effect.
+     */
     private static final Logger logger = plugin.getLogger();
 
 
     /**
-     * Starts the Light Gem passive effect recurring task.
+     * Starts a recurring task that manages the Light Gem's glowing effect.
      *
-     * <p>This method schedules a task that runs every second (20 ticks) and:</p>
-     * <ol>
-     *   <li>Checks all online players to see who has a Light Gem in their inventory</li>
-     *   <li>For players with the Light Gem, makes all other players glow with an aqua outline (only visible to them)</li>
-     *   <li>For players without the Light Gem, removes any glowing effects they previously saw</li>
-     * </ol>
-     *
+     * The task runs every second to check all online players. If a player is holding
+     * a Light Gem, it makes all other players glow for them. If they are not,
+     * it removes any glowing effects they may have been seeing.
      */
     public static void startLightGemTask() {
         logger.info("Starting Light Gem passive effect task");
@@ -71,6 +65,13 @@ public class LightGemTask {
         logger.info("Light Gem passive effect task started successfully");
     }
 
+    /**
+     * Sets the glowing status of a target player for a specific viewer.
+     *
+     * @param viewer  The player who will see the glowing effect.
+     * @param target  The player who will be made to glow.
+     * @param glowing {@code true} to enable glowing, {@code false} to disable it.
+     */
     private static void setPlayerGlowing(final Player viewer, final Player target, final boolean glowing) {
         final EntityData<Byte> entityData = getPlayerEntityData(target, glowing);
         final List<EntityData<?>> metadata = List.of(entityData);
@@ -83,15 +84,21 @@ public class LightGemTask {
         manager.sendPacket(viewer, packet);
       }
 
-    private static @NotNull EntityData<Byte> getPlayerEntityData(Player player1, boolean glowing) {
+    /**
+     * Creates the entity metadata required to toggle the glowing effect.
+     *
+     * @param player  The player whose metadata flags are being modified.
+     * @param glowing {@code true} to set the glowing flag, {@code false} to unset it.
+     * @return A new {@link EntityData} object with the updated flags.
+     */
+    private static @NotNull EntityData<Byte> getPlayerEntityData(Player player, boolean glowing) {
 
-        final byte flags = (byte) ((player1.getFireTicks() > 0 ? 0x01 : 0) |
-                (player1.isSneaking() ? 0x02 : 0) | (player1.isSprinting() ? 0x08 : 0) |
-                (player1.isSwimming() ? 0x10 : 0) |
-                (player1.isInvisible() ? 0x20 : 0) | (glowing ? 0x40 : 0) |
-                (player1.isGliding() ? 0x80 : 0));
+        final byte flags = (byte) ((player.getFireTicks() > 0 ? 0x01 : 0) |
+                (player.isSneaking() ? 0x02 : 0) | (player.isSprinting() ? 0x08 : 0) |
+                (player.isSwimming() ? 0x10 : 0) |
+                (player.isInvisible() ? 0x20 : 0) | (glowing ? 0x40 : 0) |
+                (player.isGliding() ? 0x80 : 0));
         return new EntityData<>(0, EntityDataTypes.BYTE, flags);
 
     }
-
 }

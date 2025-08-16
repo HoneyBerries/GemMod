@@ -18,28 +18,24 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
 /**
- * Main class for the GemMod Bukkit plugin.
+ * Main class for the GemMod plugin.
  *
- * <p>This plugin adds special gem items to Minecraft that grant players unique abilities:</p>
+ * This plugin introduces a variety of magical gems into Minecraft, each granting unique abilities to players.
+ * It handles the plugin's lifecycle, including command registration, event listeners, and task scheduling.
+ *
+ * The available gems and their features include:
  * <ul>
- *   <li><b>Air Gem:</b> Provides a velocity boost (double jump)</li>
- *   <li><b>Darkness Gem:</b> Grants temporary invisibility and hides equipment</li>
- *   <li><b>Earth Gem:</b> Grants temporary invulnerability through resistance effect</li>
- *   <li><b>Fire Gem:</b> Launches a powerful fireball projectile</li>
- *   <li><b>Light Gem:</b> Strikes a targeted player with lightning and makes other players glow</li>
+ *   <li><b>Air Gem:</b> Provides a powerful velocity boost, allowing for a double jump-like ability.</li>
+ *   <li><b>Darkness Gem:</b> Grants temporary invisibility and conceals the player's armor and held items.</li>
+ *   <li><b>Earth Gem:</b> Bestows temporary invulnerability by applying a strong resistance effect.</li>
+ *   <li><b>Fire Gem:</b> Allows the player to launch destructive fireball projectiles.</li>
+ *   <li><b>Light Gem:</b> Can strike a targeted player with lightning and cause other nearby entities to glow.</li>
  * </ul>
  *
- * <p>This main class handles:</p>
- * <ul>
- *   <li>Plugin lifecycle events (enable/disable)</li>
- *   <li>Command registration</li>
- *   <li>Event listener setup</li>
- *   <li>Recurring task scheduling</li>
- *   <li>Integration with the GlowingEntities library</li>
- * </ul>
+ * This class is responsible for the core initialization and management of the plugin's components.
  *
  * @author HoneyBerries
- * @since 1.0
+ * @version 1.0
  */
 public final class GemMod extends JavaPlugin {
 
@@ -51,9 +47,8 @@ public final class GemMod extends JavaPlugin {
 
     /**
      * Called when the plugin is loaded.
-     * <p>
+     *
      * Initializes the PacketEvents API and prepares it for use during the plugin's lifecycle.
-     * </p>
      */
     @Override
     public void onLoad() {
@@ -77,10 +72,9 @@ public final class GemMod extends JavaPlugin {
 
     /**
      * Called when the plugin is enabled.
-     * <p>
+     *
      * Initializes the plugin by loading configuration, registering commands, event listeners,
      * and scheduling recurring tasks.
-     * </p>
      */
     @Override
     public void onEnable() {
@@ -122,12 +116,11 @@ public final class GemMod extends JavaPlugin {
 
     /**
      * Registers all plugin commands.
-     * <p>
-     * Currently registers:
-     * </p>
+     *
+     * This method sets up the command executors for the following commands:
      * <ul>
-     *   <li><b>/gem</b> command: Main command for gem-related operations</li>
-     *   <li><b>/gemmod</b> command: Command for managing gem mod settings and features</li>
+     *   <li><b>/gem:</b> The primary command for all gem-related operations.</li>
+     *   <li><b>/gemmod:</b> A command for managing the plugin's settings and features.</li>
      * </ul>
      */
     private void registerCommands() {
@@ -161,13 +154,9 @@ commands -> {
 
     /**
      * Registers all event listeners for the plugin.
-     * <p>
-     * This includes:
-     * </p>
-     * <ul>
-     *   <li>General listeners for gem usage and cooldown management, etc</li>
-     *   <li>Gem-specific listeners for special ability triggers</li>
-     * </ul>
+     *
+     * This includes listeners for general gameplay events, such as gem usage and cooldowns,
+     * as well as specific listeners for each gem's unique abilities.
      */
     private void registerEventListeners() {
         // Register general listeners
@@ -235,15 +224,14 @@ commands -> {
     }
 
     /**
-     * Schedules all recurring tasks needed for gem functionality.
-     * <p>
-     * This includes tasks for:
-     * </p>
+     * Schedules all recurring tasks required for the gems' functionality.
+     *
+     * This includes tasks for managing passive effects, such as:
      * <ul>
-     *   <li>Earth Gem: Monitoring and applying various beneficial effects</li>
-     *   <li>Fire Gem: Handling fire resistance mechanics</li>
-     *   <li>Light Gem: Managing glowing effects on players</li>
-     *   <li>Water Gem: Handling water breathing and dolphin's grace</li>
+     *   <li>The Earth Gem's resistance and other buffs.</li>
+     *   <li>The Fire Gem's fire resistance.</li>
+     *   <li>The Light Gem's glowing effect on entities.</li>
+     *   <li>The Water Gem's water breathing and enhanced swimming abilities.</li>
      * </ul>
      */
     private void scheduleTasks() {
@@ -295,13 +283,12 @@ commands -> {
 
     /**
      * Called when the plugin is disabled.
-     * <p>
-     * Performs cleanup operations:
-     * </p>
+     *
+     * This method performs all necessary cleanup operations, including:
      * <ol>
-     *   <li>Cancels all scheduled tasks</li>
-     *   <li>Disables the GlowingEntities integration</li>
-     *   <li>Logs the shutdown process</li>
+     *   <li>Cancelling all active Bukkit tasks to prevent memory leaks.</li>
+     *   <li>Terminating the PacketEvents API to ensure a clean shutdown.</li>
+     *   <li>Logging the shutdown process for administrative purposes.</li>
      * </ol>
      */
     @Override
@@ -332,34 +319,35 @@ commands -> {
     /**
      * Retrieves the singleton instance of the GemMod plugin.
      *
-     * @return the GemMod plugin instance
+     * @return The singleton instance of the {@link GemMod} plugin.
      */
     public static GemMod getInstance() {
         return getPlugin(GemMod.class);
     }
 
     /**
-     * Sets the enabled status of a feature.
+     * Sets the enabled status of a specific feature.
      *
-     * @param feature the feature name
-     * @param enabled true if the feature is enabled, false otherwise
+     * @param feature The name of the feature to update.
+     * @param enabled {@code true} to enable the feature, {@code false} to disable it.
      */
     private void setFeatureEnabled(String feature, boolean enabled) {
         enabledFeatures.put(feature, enabled);
     }
 
     /**
-     * Checks if a feature is enabled.
+     * Checks if a specific feature is currently enabled.
      *
-     * @param feature the feature to check
-     * @return true if the feature is enabled, false otherwise
+     * @param feature The name of the feature to check.
+     * @return {@code true} if the feature is enabled, {@code false} otherwise.
      */
     public boolean isFeatureEnabled(String feature) {
         return enabledFeatures.getOrDefault(feature, false);
     }
 
     /**
-     * Logs the status of all registered features.
+     * Logs the current status of all registered features to the console.
+     * This is useful for debugging and verifying that all components have been loaded correctly.
      */
     private void logEnabledFeatures() {
         getLogger().info("\n---------- GemMod Feature Status ----------");

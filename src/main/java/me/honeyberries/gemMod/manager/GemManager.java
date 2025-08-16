@@ -17,14 +17,13 @@ import java.util.Objects;
 import net.kyori.adventure.text.format.TextColor;
 
 /**
- * <b>GemManager</b> is a utility class for creating and managing custom gem items with specific properties.
- * </p>
+ * Manages the creation and identification of custom gem items.
+ * This utility class provides methods to create gems with specific attributes and to check for their presence in a player's inventory.
  */
 public class GemManager {
 
     /**
-     * Enum representing the various types of gems available.
-     * </p>
+     * Represents the different types of gems available in the plugin.
      */
     public enum GemType {
         AIR,
@@ -37,12 +36,11 @@ public class GemManager {
     }
 
     /**
-     * Checks if the specified player has at least one gem of the given type in their inventory.
-     * </p>
+     * Checks if a player has at least one gem of a specific type in their inventory.
      *
-     * @param player  the player whose inventory to check
-     * @param gemType the type of gem to look for
-     * @return true if the player has at least one gem of the specified type, false otherwise
+     * @param player  The player whose inventory is to be checked.
+     * @param gemType The type of gem to look for.
+     * @return {@code true} if the player has the gem, {@code false} otherwise.
      */
     public static boolean hasGem(Player player, GemType gemType) {
         ItemStack gemItem = createGem(gemType, 1);
@@ -50,12 +48,11 @@ public class GemManager {
     }
 
     /**
-     * Checks if the player is currently holding a gem of the specified type in their main hand.
-     * </p>
+     * Checks if the player is holding a specific type of gem in their main hand.
      *
-     * @param player  the player to check
-     * @param gemType the type of gem to verify
-     * @return true if the held item matches the specified gem type, false otherwise
+     * @param player  The player to check.
+     * @param gemType The type of gem to verify.
+     * @return {@code true} if the player is holding the specified gem, {@code false} otherwise.
      */
     public static boolean isHoldingGem(@NotNull Player player, @NotNull GemType gemType) {
         ItemStack heldItem = player.getInventory().getItemInMainHand();
@@ -63,35 +60,32 @@ public class GemManager {
     }
 
     /**
-     * Identifies the gem type of a given item based on its properties.
-     * </p>
+     * Identifies the type of a gem based on its item properties.
      *
-     * @param item the item to identify
-     * @return the GemType if the item is a gem; null if the item is not a gem
+     * @param item The item to identify.
+     * @return The {@link GemType} if the item is a valid gem, or {@code null} if it is not.
      */
     public static @Nullable GemType identifyGemType(@Nullable ItemStack item) {
         if (item == null) {
             return null;
         }
 
-        // <i>Iterate through each gem type to check if the item matches</i>
+        // Iterate through each gem type to check if the item matches.
         for (GemType gemType : GemType.values()) {
             if (item.isSimilar(createGem(gemType, 1))) {
                 return gemType;
             }
         }
-        // <i>Return null if no match is found</i>
+        // Return null if no match is found.
         return null;
     }
 
     /**
-     * Creates a customized gem item of the specified type and amount.
-     * Sets properties such as name, lore, custom model data, and enchantments.
-     * </p>
+     * Creates a custom gem {@link ItemStack} with predefined properties such as name, lore, and enchantments.
      *
-     * @param gemType the type of gem to create
-     * @param amount  the quantity of the item to generate
-     * @return an ItemStack representing the customized gem
+     * @param gemType The type of gem to create.
+     * @param amount  The number of gems to create.
+     * @return A new {@link ItemStack} representing the specified gem.
      */
     public static ItemStack createGem(GemType gemType, int amount) {
         ItemStack gemItemStack = new ItemStack(Material.DIAMOND, amount);
@@ -99,10 +93,10 @@ public class GemManager {
 
         String customModelKey = null;
 
-        // <i>Set gem name, lore, and custom model key based on type</i>
+        // Set gem properties based on its type.
         switch (gemType) {
             case AIR -> {
-                gemItemMeta.itemName(Component.text("Aero Gem").color(TextColor.fromHexString("#f7ded1")));
+                gemItemMeta.itemName(Component.text("Air Gem").color(TextColor.fromHexString("#f7ded1")));
                 gemItemMeta.lore(List.of(
                         Component.text("Grants immunity to fall and flight damage.").color(TextColor.fromHexString("#ddfff8")),
                         Component.text("Use this gem to dash forward with a burst of wind.").color(TextColor.fromHexString("#e7e3ff"))
@@ -110,7 +104,7 @@ public class GemManager {
                 customModelKey = "airgem";
             }
             case DARKNESS -> {
-                gemItemMeta.itemName(Component.text("Shadow Gem").color(TextColor.fromHexString("#3c2c90")));
+                gemItemMeta.itemName(Component.text("Darkness Gem").color(TextColor.fromHexString("#3c2c90")));
                 gemItemMeta.lore(List.of(
                         Component.text("Become truly invisible, not showing armor or items.").color(TextColor.fromHexString("#1b46cb")),
                         Component.text("Give players darkness and cover up their screens with shadow particles.").color(TextColor.fromHexString("#542285"))
@@ -118,7 +112,7 @@ public class GemManager {
                 customModelKey = "darknessgem";
             }
             case EARTH -> {
-                gemItemMeta.itemName(Component.text("Dendro Gem").color(TextColor.fromHexString("#3fd41e")));
+                gemItemMeta.itemName(Component.text("Earth Gem").color(TextColor.fromHexString("#3fd41e")));
                 gemItemMeta.lore(List.of(
                         Component.text("Provides Haste II, Speed II, and Strength II.").color(TextColor.fromHexString("#4cd69b")),
                         Component.text("This ability negates damage for a short period of time.").color(TextColor.fromHexString("#72d132"))
@@ -126,7 +120,7 @@ public class GemManager {
                 customModelKey = "earthgem";
             }
             case FIRE -> {
-                gemItemMeta.itemName(Component.text("Pyro Gem").color(TextColor.fromHexString("#ff6a2b")));
+                gemItemMeta.itemName(Component.text("Fire Gem").color(TextColor.fromHexString("#ff6a2b")));
                 gemItemMeta.lore(List.of(
                         Component.text("Grants Fire Resistance.").color(TextColor.fromHexString("#dc4772")),
                         Component.text("Use the gem to launch a fireball.").color(TextColor.fromHexString("#ee3d24"))
@@ -134,7 +128,7 @@ public class GemManager {
                 customModelKey = "firegem";
             }
             case ICE -> {
-                gemItemMeta.itemName(Component.text("Cryo Gem").color(TextColor.fromHexString("#5fe3ff")));
+                gemItemMeta.itemName(Component.text("Ice Gem").color(TextColor.fromHexString("#5fe3ff")));
                 gemItemMeta.lore(List.of(
                         Component.text("Slows nearby foes and reduces damage taken.").color(TextColor.fromHexString("#cedfff")),
                         Component.text("Right-click to freeze targets in place.").color(TextColor.fromHexString("#a4acff"))
@@ -142,7 +136,7 @@ public class GemManager {
                 customModelKey = "icegem";
             }
             case LIGHT -> {
-                gemItemMeta.itemName(Component.text("Photo Gem").color(TextColor.fromHexString("#ffff81")));
+                gemItemMeta.itemName(Component.text("Light Gem").color(TextColor.fromHexString("#ffff81")));
                 gemItemMeta.lore(List.of(
                         Component.text("Lets you see players through walls.").color(TextColor.fromHexString("#eee27b")),
                         Component.text("Activate the gem on a player to strike lightning on them.").color(TextColor.fromHexString("#eec04d"))
@@ -150,7 +144,7 @@ public class GemManager {
                 customModelKey = "lightgem";
             }
             case WATER -> {
-                gemItemMeta.itemName(Component.text("Hydro Gem").color(TextColor.fromHexString("#2373E0")));
+                gemItemMeta.itemName(Component.text("Water Gem").color(TextColor.fromHexString("#2373E0")));
                 gemItemMeta.lore(List.of(
                         Component.text("Gives Water Breathing and Dolphin’s Grace.").color(TextColor.fromHexString("#b9daff")),
                         Component.text("Right-click to fire a high-pressure water jet.").color(TextColor.fromHexString("#40c7ff"))
@@ -159,11 +153,11 @@ public class GemManager {
             }
         }
 
-        // Add enchantments and flags
+        // Add a cosmetic enchantment and hide it from the tooltip.
         gemItemMeta.addEnchant(Enchantment.MENDING, 1, true);
         gemItemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
 
-        // <i>Apply meta and custom model data</i>
+        // Apply the metadata to the item.
         gemItemStack.setItemMeta(gemItemMeta);
 
         if (customModelKey != null) {

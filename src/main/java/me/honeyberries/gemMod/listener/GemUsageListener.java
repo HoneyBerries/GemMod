@@ -17,50 +17,35 @@ import org.bukkit.event.Event.Result;
 import java.util.logging.Level;
 
 /**
- * Listener that handles gem usage and activation of gem abilities.
+ * Handles the activation of gem abilities upon player interaction.
  *
- * <p>This listener is responsible for:</p>
- * <ul>
- *   <li>Detecting right-click actions with gems</li>
- *   <li>Preventing off-hand gem usage</li>
- *   <li>Triggering the appropriate gem ability</li>
- *   <li>Managing interaction cancellation</li>
- * </ul>
- *
- * <p>The listener supports all gem types:</p>
- * <ul>
- *   <li><b>Air Gem:</b> Double jump ability</li>
- *   <li><b>Darkness Gem:</b> Invisibility</li>
- *   <li><b>Earth Gem:</b> Resistance boost</li>
- *   <li><b>Fire Gem:</b> Fireball projectile</li>
- *   <li><b>Light Gem:</b> Lightning strike</li>
- *   <li><b>Water Gem:</b> Freeze ability</li>
- * </ul>
+ * This listener detects right-click actions with a gem in the main hand,
+ * cancels the default interaction, and triggers the corresponding ability.
+ * It also prevents gem usage from the off-hand to avoid conflicts.
  *
  * @author HoneyBerries
- * @since 1.0
+ * @version 1.0
  */
 public class GemUsageListener implements Listener {
 
-    /** Reference to the main plugin instance for logging and plugin operations. */
+    /**
+     * A reference to the main plugin instance for logging and other operations.
+     */
     private final GemMod plugin = GemMod.getInstance();
 
-    /** Reference to the cooldown manager for handling gem ability cooldowns. */
+    /**
+     * A reference to the cooldown manager for handling ability cooldowns.
+     */
     private final CooldownManager cooldownManager = CooldownManager.getInstance();
 
     /**
-     * Processes player interactions to detect and handle gem usage.
+     * Processes player interactions to detect and trigger gem abilities.
      *
-     * <p>This method:</p>
-     * <ol>
-     *   <li>Validates the interaction type (right-click only)</li>
-     *   <li>Checks for gems in the player's hands</li>
-     *   <li>Prevents off-hand gem usage</li>
-     *   <li>Cancels default interaction behavior</li>
-     *   <li>Triggers the appropriate gem ability</li>
-     * </ol>
+     * This method validates that the interaction is a right-click, checks for a gem
+     * in the main hand, and prevents off-hand usage. If a valid gem is used,
+     * it cancels the event and calls the appropriate ability handler.
      *
-     * @param event The PlayerInteractEvent triggered by player interaction
+     * @param event The {@link PlayerInteractEvent} triggered by the player.
      */
     @EventHandler
     public void onGemUse(PlayerInteractEvent event) {

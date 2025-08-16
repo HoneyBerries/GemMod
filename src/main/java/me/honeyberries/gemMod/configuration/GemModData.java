@@ -12,40 +12,40 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Manages persistent data storage for the GemMod plugin.
- * <p>
- * This class is thread-safe and designed to work in multithreaded environments like Folia servers.
- * It uses ConcurrentHashMap for in-memory storage and synchronization for file operations
- * to prevent concurrency issues when multiple threads access or modify the data simultaneously.
- * <p>
- * The data is stored in data.yml and includes information about which gems have been crafted.
+ * Manages persistent data for the GemMod plugin, such as the crafted status of each gem.
+ *
+ * This class is designed to be thread-safe for use in multithreaded server environments like Folia.
+ * It uses a {@link ConcurrentHashMap} for in-memory data storage and synchronizes file operations
+ * to prevent race conditions and ensure data integrity.
  */
 public class GemModData {
 
-    // Reference to the main plugin instance
+    /**
+     * A reference to the main plugin instance.
+     */
     private static final GemMod plugin = GemMod.getInstance();
 
-    // Data file for storing gem mod data
+    /**
+     * The file where gem data is stored.
+     */
     private static File dataFile;
     private static YamlConfiguration yamlConfig;
 
     /**
-     * Thread-safe map to track which gems have been crafted.
-     * ConcurrentHashMap provides thread safety for map operations without needing explicit synchronization.
+     * A thread-safe map that tracks whether each gem type has been crafted.
      */
     private static final Map<GemType, Boolean> gemCraftedMap = new ConcurrentHashMap<>();
 
     /**
-     * Lock object for synchronizing file operations.
-     * This ensures that only one thread at a time can read from or write to the data.yml file,
-     * preventing file corruption or inconsistent states in a multithreaded environment.
+     * A lock object to synchronize file I/O operations, preventing corruption in multithreaded environments.
      */
     private static final Object fileLock = new Object();
 
     /**
-     * Loads the gem data from the data.yml file.
-     * This method initializes the data file, loads the configuration, and updates the gem-crafted map.
-     * It also removes existing recipes and registers new ones based on the loaded data.
+     * Loads gem data from the {@code data.yml} file into memory.
+     *
+     * This method initializes the data file if it doesn't exist, loads the YAML configuration,
+     * populates the gem crafted status map, and updates crafting recipes accordingly.
      */
     public static void loadData() {
         synchronized (fileLock) {
@@ -82,11 +82,10 @@ public class GemModData {
     }
 
     /**
-     * Sets the gem-crafted status in the configuration.
-     * Updates the in-memory map and saves the change to the data.yml file.
+     * Sets the crafted status for a specific gem type and saves the change to the data file.
      *
-     * @param type    the gem type
-     * @param crafted the crafted status
+     * @param type    The gem type to update.
+     * @param crafted The new crafted status.
      */
     public static void setGemCrafted(GemType type, boolean crafted) {
         // Update the map (ConcurrentHashMap handles thread safety for the map operation)
@@ -109,9 +108,8 @@ public class GemModData {
     }
 
     /**
-     * Saves the current configuration to the data.yml file.
-     * If the save fails, a warning message is logged.
-     * This method is synchronized to prevent concurrent file access.
+     * Saves the current configuration to the {@code data.yml} file.
+     * This method is synchronized to ensure thread-safe file access.
      */
     public static void saveConfig() {
         synchronized (fileLock) {
@@ -124,11 +122,11 @@ public class GemModData {
     }
 
     /**
-     * Sets a value in the configuration and saves the updated configuration file.
-     * This method is synchronized to prevent concurrent file access.
+     * Sets a value at a specific path in the configuration and saves the file.
+     * This method is synchronized for thread safety.
      *
-     * @param path  the configuration path
-     * @param value the value to set
+     * @param path  The configuration path.
+     * @param value The value to set.
      */
     public static void set(@NotNull String path, @NotNull Object value) {
         synchronized (fileLock) {
@@ -138,20 +136,18 @@ public class GemModData {
     }
 
     /**
-     * Gets an unmodifiable view of the gem crafted map to prevent external modification.
+     * Returns an unmodifiable view of the gem crafted map to prevent external modification.
      *
-     * @return an unmodifiable view of the gem crafted map
+     * @return An unmodifiable {@link Map} of the gem crafted statuses.
      */
     public static Map<GemType, Boolean> getGemCraftedMap() {
         return Collections.unmodifiableMap(gemCraftedMap);
     }
 
     /**
-     * Updates the gem crafted map with values from the provided map.
-     * This method is thread-safe as it uses ConcurrentHashMap's thread-safe operations.
-     * Saves all changes to the configuration file.
+     * Updates the gem crafted map with a new set of values and saves the changes.
      *
-     * @param newGemCraftedMap the map containing new values to set
+     * @param newGemCraftedMap A map containing the new crafted statuses for each gem type.
      */
     public static void setGemCraftedMap(Map<GemType, Boolean> newGemCraftedMap) {
         // Clear and update the map instead of reassigning it

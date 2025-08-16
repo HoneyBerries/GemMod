@@ -20,32 +20,25 @@ import org.jetbrains.annotations.NotNull;
 import java.time.Duration;
 
 /**
- * Listener class for handling gem crafting events in the GemMod plugin.
- * <p>
- * This class listens for crafting events and performs the following actions:
- * - Identifies if the crafted item is a gem.
- * - Updates the gem-crafted status in the plugin's configuration.
- * - Logs the crafting event and broadcasts a message to all players.
- * <p>
- * This ensures that each gem can only be crafted once and notifies players
- * when a gem is successfully crafted.
+ * Handles events related to the crafting of gems.
+ *
+ * This listener detects when a gem is crafted, updates its status in the configuration,
+ * removes the crafting recipe to ensure it is a one-time event, and notifies all players.
  */
 public class GemCraftListener implements Listener {
 
-    /** Reference to the main plugin instance */
+    /**
+     * A reference to the main plugin instance.
+     */
     private static final GemMod plugin = GemMod.getInstance();
 
     /**
-     * Handles the CraftItemEvent to detect and process gem crafting.
-     * <p>
-     * This method performs the following steps:
-     * - Checks if the crafted item is a gem.
-     * - Updates the gem-crafted status in the configuration.
-     * - Logs the crafting event and broadcasts a message to all players.
-     * <p>
-     * If the crafted item is not a gem, the method exits without performing any actions.
+     * Triggers when an item is crafted, checking if the item is a gem.
      *
-     * @param event The CraftItemEvent triggered when an item is crafted.
+     * If the crafted item is identified as a gem, this method updates its crafted status,
+     * removes its recipe, and broadcasts a server-wide announcement.
+     *
+     * @param event The {@link CraftItemEvent} triggered when an item is crafted.
      */
     @EventHandler
     public void onGemCraft(CraftItemEvent event) {
@@ -94,11 +87,11 @@ public class GemCraftListener implements Listener {
     }
 
     /**
-     * Constructs a Title object for the gem crafting notification.
+     * Constructs a {@link Title} for the gem crafting notification.
      *
-     * @param gemType The type of gem that was crafted
-     * @param aCase   The case to be used in the title (e.g., "Air", "Darkness")
-     * @return A Title object with the appropriate text and timings
+     * @param gemType The type of gem that was crafted.
+     * @param aCase   The formatted name of the gem (e.g., "Air", "Darkness").
+     * @return A {@link Title} object with the appropriate text and display times.
      */
     private static @NotNull Title getTitle(GemType gemType, String aCase) {
         Title.Times times = Title.Times.times(
@@ -117,10 +110,10 @@ public class GemCraftListener implements Listener {
     }
 
     /**
-     * Gets the NamespacedKey for a given gem type.
+     * Retrieves the {@link NamespacedKey} for a given gem type.
      *
-     * @param gemType The type of gem
-     * @return The NamespacedKey for the gem's recipe, or null if not found
+     * @param gemType The type of gem.
+     * @return The {@link NamespacedKey} for the gem's recipe, or {@code null} if not found.
      */
     private NamespacedKey getRecipeKeyForGemType(GemType gemType) {
         return switch (gemType) {
