@@ -49,60 +49,43 @@ public class GemUsageListener implements Listener {
      */
     @EventHandler
     public void onGemUse(PlayerInteractEvent event) {
-        // Only proceed with right-click actions (air or block)
-        Action action = event.getAction();
-        if (action != Action.RIGHT_CLICK_AIR && action != Action.RIGHT_CLICK_BLOCK) {
+        // We only care about right-clicks for activating gems.
+        if (event.getAction() != Action.RIGHT_CLICK_AIR && event.getAction() != Action.RIGHT_CLICK_BLOCK) {
             return;
         }
 
-        // Retrieve the player and the item in their main hand (potential gem).
         Player player = event.getPlayer();
-        ItemStack mainItem = player.getInventory().getItemInMainHand();
-        GemType mainHandGem = GemManager.identifyGemType(mainItem);
+        ItemStack mainHandItem = player.getInventory().getItemInMainHand();
+        GemType gemType = GemManager.identifyGemType(mainHandItem);
 
-        // Handle off-hand interactions: if main hand holds a gem, block off-hand use.
-        if (event.getHand() == EquipmentSlot.OFF_HAND) {
-            if (mainHandGem != null) {
-                event.setCancelled(true);                    // Cancel event to prevent conflicts
-                event.setUseItemInHand(Result.DENY);         // Deny off-hand usage
-                event.setUseInteractedBlock(Result.DENY);    // Deny block interaction
-            }
-            return; // Ensure abilities are only processed from the main hand
-        }
-
-        // If there is no gem in the main hand, exit early.
-        if (mainHandGem == null) {
+        // If the item in the main hand is not a gem, we don't need to do anything.
+        if (gemType == null) {
             return;
         }
 
-        // Cancel further processing of the default item use.
-        event.setCancelled(true);
+        // If a gem is in the main hand, we cancel the event entirely.
+        // This prevents the default use action of the gem itself and also blocks any off-hand item usage.
         event.setUseItemInHand(Result.DENY);
         event.setUseInteractedBlock(Result.DENY);
+        event.setCancelled(true);
+
+        // We only trigger the ability if the interaction was with the main hand.
+        if (event.getHand() != EquipmentSlot.MAIN_HAND) {
+            return;
+        }
 
         // Execute the ability associated with the identified gem type.
-        switch (mainHandGem) {
-            case AIR:
-                AbilityManager.handleAirGemAbility(player);
-                break;
-            case DARKNESS:
-                AbilityManager.handleDarknessGemAbility(player);
-                break;
-            case EARTH:
-                AbilityManager.handleEarthGemAbility(player);
-                break;
-            case FIRE:
-                AbilityManager.handleFireGemAbility(player);
-                break;
-            case LIGHT:
-                AbilityManager.handleLightGemAbility(player);
-                break;
-            case WATER:
-                AbilityManager.handleWaterGemAbility(player);
-                break;
-            default:
-                plugin.getLogger().log(Level.SEVERE, "Unknown gem type: " + mainHandGem);
+        switch (gemType) {
+            case AIR -> AbilityManager.handleAirGemAbility(player);
+            case DARKNESS -> AbilityManager.handleDarknessGemAbility(player);
+            case EARTH -> AbilityManager.handleEarthGemAbility(player);
+            case FIRE -> AbilityManager.handleFireGemAbility(player);
+            case LIGHT -> AbilityManager.handleLightGemAbility(player);
+            case WATER -> AbilityManager.handleWaterGemAbility(player);
+            default -> {
+                plugin.getLogger().log(Level.SEVERE, "Unknown gem type: " + gemType);
                 player.sendMessage("Unknown gem type!");
+            }
         }
     }
 }

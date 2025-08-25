@@ -9,8 +9,13 @@ import net.kyori.adventure.resource.ResourcePackRequest;
 import net.kyori.adventure.resource.ResourcePackStatus;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import me.honeyberries.gemMod.configuration.GemModData;
+import me.honeyberries.gemMod.manager.GemManager.GemType;
+import me.honeyberries.gemMod.recipe.GemRecipe;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerJoinEvent;
 
 import java.net.URI;
 import java.util.Map;
@@ -133,5 +138,58 @@ public class PlayerJoinListener implements Listener {
         if (latch != null) {
             latch.countDown(); // Release latch early to prevent the thread from hanging.
         }
+    }
+
+    /**
+     * Discovers any available (uncrafted) gem recipes for the player when they join.
+     *
+     * @param event The {@link PlayerJoinEvent}.
+     */
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        Player player = event.getPlayer();
+        // Run on the player's region scheduler to be safe.
+        player.getScheduler().run(plugin, task -> {
+            discoverAvailableRecipes(player);
+        }, null, null);
+    }
+
+    /**
+     * Iterates through all gem recipes and discovers the ones that have not yet been crafted
+     * for the given player.
+     *
+     * @param player The player to discover recipes for.
+     */
+    private void discoverAvailableRecipes(Player player) {
+        Map<GemType, Boolean> craftedStatus = GemModData.getGemCraftedMap();
+        int discoveredCount = 0;
+
+        if (discoverRecipeIfUncrafted(player, GemType.AIR, GemRecipe.airGemKey, craftedStatus)) discoveredCount++;
+        if (discoverRecipeIfUncrafted(player, GemType.DARKNESS, GemRecipe.darknessGemKey, craftedStatus)) discoveredCount++;
+        if (discoverRecipeIfUncrafted(player, GemType.EARTH, GemRecipe.earthGemKey, craftedStatus)) discoveredCount++;
+        if (discoverRecipeIfUncrafted(player, GemType.FIRE, GemRecipe.fireGemKey, craftedStatus)) discoveredCount++;
+        if (discoverRecipeIfUncrafted(player, GemType.LIGHT, GemRecipe.lightGemKey, craftedStatus)) discoveredCount++;
+        if (discoverRecipeIfUncrafted(player, GemType.WATER, GemRecipe.waterGemKey, craftedStatus)) discoveredCount++;
+
+        if (discoveredCount > 0) {
+            plugin.getLogger().info("Discovered " + discoveredCount + " available gem recipes for " + player.getName());
+        }
+    }
+
+    /**
+     * Helper method to discover a single recipe for a player if it hasn't been crafted yet.
+     *
+     * @param player        The player.
+     * @param type          The gem type.
+     * @param key           The recipe key.
+     * @param craftedStatus A map of the crafted status of all gems.
+     * @return True if a recipe was discovered, false otherwise.
+     */
+    private boolean discoverRecipeIfUncrafted(Player player, GemType type, org.bukkit.NamespacedKey key, Map<GemType, Boolean> craftedStatus) {
+        if (!craftedStatus.getOrDefault(type, false)) {
+            player.discoverRecipe(key);
+            return true;
+        }
+        return false;
     }
 }
