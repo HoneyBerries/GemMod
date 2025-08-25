@@ -60,7 +60,7 @@ public class GemModData {
 
             plugin.getLogger().info("---------- Loading gem data ----------");
 
-            // 1. FIRST load crafted status from config
+            // Load crafted status from config
             gemCraftedMap.clear();
             for (GemType type : GemType.values()) {
                 String path = "gems." + type.name().toLowerCase() + ".crafted";
@@ -68,16 +68,7 @@ public class GemModData {
                 gemCraftedMap.put(type, crafted);
                 plugin.getLogger().info(type.name() + " gem crafted: " + crafted);
             }
-
-            // 2. THEN remove all existing recipes
-            plugin.getServer().removeRecipe(GemRecipe.airGemKey);
-            plugin.getServer().removeRecipe(GemRecipe.darknessGemKey);
-            plugin.getServer().removeRecipe(GemRecipe.earthGemKey);
-            plugin.getServer().removeRecipe(GemRecipe.fireGemKey);
-            plugin.getServer().removeRecipe(GemRecipe.lightGemKey);
-
-            // 3. FINALLY, register recipes based on loaded data
-            GemRecipe.registerGemRecipes();
+            plugin.getLogger().info("---------- Gem data loaded ----------");
         }
     }
 

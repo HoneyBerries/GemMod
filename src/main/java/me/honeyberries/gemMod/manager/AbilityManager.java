@@ -41,17 +41,47 @@ public class AbilityManager {
     private static final Logger logger = plugin.getLogger();
 
     // Duration of cooldown constants
-    public static final long AIR_COOLDOWN_MILLIS = 15_000; // 15 seconds
-    public static final long DARKNESS_COOLDOWN_MILLIS = 60_000; // 60 seconds
-    public static final long EARTH_COOLDOWN_MILLIS = 70_000; // 70 seconds
-    public static final long FIREBALL_COOLDOWN_MILLIS = 20_000; // 20 seconds
-    public static final long LIGHT_COOLDOWN_MILLIS = 30_000; // 30 seconds
-    public static final long WATER_COOLDOWN_MILLIS = 45_000; // 45 seconds
+    private static final long AIR_COOLDOWN_MILLIS = 15_000; // 15 seconds
+    private static final long DARKNESS_COOLDOWN_MILLIS = 60_000; // 60 seconds
+    private static final long EARTH_COOLDOWN_MILLIS = 70_000; // 70 seconds
+    private static final long FIREBALL_COOLDOWN_MILLIS = 20_000; // 20 seconds
+    private static final long LIGHT_COOLDOWN_MILLIS = 30_000; // 30 seconds
+    private static final long WATER_COOLDOWN_MILLIS = 45_000; // 45 seconds
 
     // Duration of ability effects
-    public static final int INVISIBILITY_DURATION_TICKS = 15 * 20; // 15 seconds in ticks
-    public static final int INVULNERABILITY_DURATION_TICKS = 10 * 20; // 10 seconds in ticks
-    public static final int WATER_FREEZE_DURATION_TICKS = 10 * 20; // 10 seconds in ticks
+    private static final int INVISIBILITY_DURATION_TICKS = 15 * 20; // 15 seconds in ticks
+    private static final int INVULNERABILITY_DURATION_TICKS = 10 * 20; // 10 seconds in ticks
+    private static final int WATER_FREEZE_DURATION_TICKS = 10 * 20; // 10 seconds in ticks
+
+
+    /**
+     * Checks if a gem ability is on cooldown for a given player.
+     * If it is, it sends a message to the player and logs the event.
+     *
+     * @param player      The player to check.
+     * @param gemType     The type of gem ability.
+     * @param abilityName The display name of the ability.
+     * @return {@code true} if the ability is on cooldown and the player cannot bypass it, {@code false} otherwise.
+     */
+    private static boolean isAbilityOnCooldown(Player player, GemType gemType, String abilityName) {
+        long remainingCooldown = cooldownManager.getRemainingCooldown(player, gemType);
+        if (remainingCooldown <= 0) {
+            return false;
+        }
+
+        long secondsLeft = remainingCooldown / 1000;
+        logger.info(String.format("%s on cooldown for %s: %ds remaining", abilityName, player.getName(), secondsLeft));
+
+        if (player.hasPermission("gemmod.cooldown.bypass")) {
+            logger.info(String.format("Player %s bypassing %s cooldown with permission", player.getName(), abilityName));
+            return false;
+        }
+
+        player.sendMessage(Component.text(String.format("%s is on cooldown! %ds left.", abilityName, secondsLeft), NamedTextColor.RED));
+        player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+        logger.info(String.format("%s ability denied for %s due to cooldown", abilityName, player.getName()));
+        return true;
+    }
 
 
     /**
@@ -68,22 +98,8 @@ public class AbilityManager {
      */
     public static void handleAirGemAbility(Player player) {
         logger.info("Player " + player.getName() + " attempting to use Air Gem ability");
-
-        // Check for cooldown
-        long remainingCooldown = cooldownManager.getRemainingCooldown(player, GemType.AIR);
-        if (remainingCooldown > 0) {
-            long secondsLeft = remainingCooldown / 1000;
-            logger.info("Air Gem on cooldown for " + player.getName() + ": " + secondsLeft + "s remaining");
-
-            // Check if the player has permission to bypass cooldown
-            if (!player.hasPermission("gemmod.cooldown.bypass")) {
-                player.sendMessage(Component.text(String.format("Double jump is on cooldown! %ds left.", secondsLeft), NamedTextColor.RED));
-                player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
-                logger.info("Air Gem ability denied for " + player.getName() + " due to cooldown");
-                return;
-            } else {
-                logger.info("Player " + player.getName() + " bypassing Air Gem cooldown with permission");
-            }
+        if (isAbilityOnCooldown(player, GemType.AIR, "Double jump")) {
+            return;
         }
 
         // Calculate boost vector (upward and forward)
@@ -117,95 +133,80 @@ public class AbilityManager {
      */
     public static void handleDarknessGemAbility(Player player) {
         logger.info("Player " + player.getName() + " attempting to use Darkness Gem ability");
-
-        // Check for cooldown
-        long remainingCooldown = cooldownManager.getRemainingCooldown(player, GemType.DARKNESS);
-        if (remainingCooldown > 0) {
-            long secondsLeft = remainingCooldown / 1000;
-            logger.info("Darkness Gem on cooldown for " + player.getName() + ": " + secondsLeft + "s remaining");
-
-            // Check if the player has permission to bypass cooldown
-            if (!player.hasPermission("gemmod.cooldown.bypass")) {
-                player.sendMessage(Component.text("Darkness Gem is on cooldown! " + secondsLeft + "s left.", NamedTextColor.RED));
-                player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
-                logger.info("Darkness Gem ability denied for " + player.getName() + " due to cooldown");
-                return;
-            } else {
-                logger.info("Player " + player.getName() + " bypassing Darkness Gem cooldown with permission");
-            }
+        if (isAbilityOnCooldown(player, GemType.DARKNESS, "Darkness Gem")) {
+            return;
         }
 
-        // Apply invisibility potion effect (no particles; visible icon)
+        // Apply invisibility and start hiding equipment
         player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, INVISIBILITY_DURATION_TICKS, 0, false, false, true));
         logger.info("Applied invisibility effect to " + player.getName() + " for " + (INVISIBILITY_DURATION_TICKS / 20) + " seconds");
 
-        // Create a repeating task to hide player's equipment
+        ScheduledTask playerHideTask = startEquipmentHidingTask(player);
+
+        // Set cooldown
+        cooldownManager.setCooldown(player, GemType.DARKNESS, DARKNESS_COOLDOWN_MILLIS, true);
+        logger.info("Set Darkness Gem cooldown for " + player.getName() + " for " + (DARKNESS_COOLDOWN_MILLIS / 1000) + " seconds");
+
+        // Schedule task to remove effects after duration
+        scheduleEffectRemoval(player, playerHideTask);
+
+        // Notify the player
+        player.getWorld().playSound(player.getLocation(), Sound.BLOCK_GRINDSTONE_USE, 1.0f, 1.0f);
+        player.sendMessage(Component.text(String.format("You are now Invisible for %d seconds!", INVISIBILITY_DURATION_TICKS / 20), TextColor.fromHexString("#12375e")));
+        logger.info("Darkness Gem ability successfully activated for " + player.getName());
+    }
+
+    private static ScheduledTask startEquipmentHidingTask(Player player) {
         logger.info("Starting equipment hiding task for " + player.getName());
-        ScheduledTask playerHideTask = player.getServer().getGlobalRegionScheduler().runAtFixedRate(plugin, scheduledTask -> {
+        return player.getServer().getGlobalRegionScheduler().runAtFixedRate(plugin, scheduledTask -> {
             if (!player.isOnline()) {
                 logger.info("Player " + player.getName() + " went offline, cancelling equipment hiding task");
                 scheduledTask.cancel();
                 return;
             }
-
-            // Hide stuff that makes players visible
-            player.setArrowsInBody(0, false);
-            player.setBeeStingersInBody(0);
-            player.setVisualFire(TriState.FALSE);
-
-            // Hide player's equipment from other players while invisible
-            for (Player p : Bukkit.getOnlinePlayers()) {
-                if (!p.equals(player)) {
-                    p.sendEquipmentChange(player, EquipmentSlot.HAND, null);
-                    p.sendEquipmentChange(player, EquipmentSlot.OFF_HAND, null);
-                    p.sendEquipmentChange(player, EquipmentSlot.HEAD, null);
-                    p.sendEquipmentChange(player, EquipmentSlot.CHEST, null);
-                    p.sendEquipmentChange(player, EquipmentSlot.LEGS, null);
-                    p.sendEquipmentChange(player, EquipmentSlot.FEET, null);
-                }
-            }
+            hidePlayerEquipment(player);
         }, 1, 1);
+    }
 
-        // Set cooldown for Darkness Gem usage
-        cooldownManager.setCooldown(player, GemType.DARKNESS, DARKNESS_COOLDOWN_MILLIS, true);
-        logger.info("Set Darkness Gem cooldown for " + player.getName() + " for " + (DARKNESS_COOLDOWN_MILLIS / 1000) + " seconds");
-
-        // Schedule task to cancel invisibility and restore equipment after duration
+    private static void scheduleEffectRemoval(Player player, ScheduledTask playerHideTask) {
         logger.info("Scheduling invisibility removal task for " + player.getName() + " in " + (INVISIBILITY_DURATION_TICKS / 20) + " seconds");
-
         plugin.getServer().getGlobalRegionScheduler().runDelayed(plugin, scheduledTask -> {
-
             logger.info("Removing darkness gem effect from " + player.getName());
             playerHideTask.cancel();
             player.removePotionEffect(PotionEffectType.INVISIBILITY);
-
-            player.setVisualFire(TriState.NOT_SET);
-
-            // Restore equipment visibility after invisibility ends
-            logger.info("Restoring equipment visibility for " + player.getName());
-            for (Player p : Bukkit.getOnlinePlayers()) {
-                if (p.isOnline() && !p.equals(player)) {
-                    p.sendEquipmentChange(player, EquipmentSlot.HAND, player.getInventory().getItemInMainHand());
-                    p.sendEquipmentChange(player, EquipmentSlot.OFF_HAND, player.getInventory().getItemInOffHand());
-                    p.sendEquipmentChange(player, EquipmentSlot.HEAD, player.getInventory().getHelmet());
-                    p.sendEquipmentChange(player, EquipmentSlot.CHEST, player.getInventory().getChestplate());
-                    p.sendEquipmentChange(player, EquipmentSlot.LEGS, player.getInventory().getLeggings());
-                    p.sendEquipmentChange(player, EquipmentSlot.FEET, player.getInventory().getBoots());
-                }
-            }
+            showPlayerEquipment(player);
         }, INVISIBILITY_DURATION_TICKS);
+    }
 
-        // Schedule cooldown removal
-        long cooldownTicks = DARKNESS_COOLDOWN_MILLIS / 50;
-        plugin.getServer().getGlobalRegionScheduler().runDelayed(plugin, task -> {
-            logger.info("Removing Darkness Gem cooldown for " + player.getName());
-            cooldownManager.removeCooldown(player, GemType.DARKNESS);
-        }, cooldownTicks);
+    private static void hidePlayerEquipment(Player player) {
+        player.setArrowsInBody(0, false);
+        player.setBeeStingersInBody(0);
+        player.setVisualFire(TriState.FALSE);
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            if (!p.equals(player)) {
+                p.sendEquipmentChange(player, EquipmentSlot.HAND, null);
+                p.sendEquipmentChange(player, EquipmentSlot.OFF_HAND, null);
+                p.sendEquipmentChange(player, EquipmentSlot.HEAD, null);
+                p.sendEquipmentChange(player, EquipmentSlot.CHEST, null);
+                p.sendEquipmentChange(player, EquipmentSlot.LEGS, null);
+                p.sendEquipmentChange(player, EquipmentSlot.FEET, null);
+            }
+        }
+    }
 
-        // Notify the player that the ability is active
-        player.getWorld().playSound(player.getLocation(), Sound.BLOCK_GRINDSTONE_USE, 1.0f, 1.0f);
-        player.sendMessage(Component.text(String.format("You are now Invisible for %d seconds!", INVISIBILITY_DURATION_TICKS / 20), TextColor.fromHexString("#12375e")));
-        logger.info("Darkness Gem ability successfully activated for " + player.getName());
+    private static void showPlayerEquipment(Player player) {
+        player.setVisualFire(TriState.NOT_SET);
+        logger.info("Restoring equipment visibility for " + player.getName());
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            if (p.isOnline() && !p.equals(player)) {
+                p.sendEquipmentChange(player, EquipmentSlot.HAND, player.getInventory().getItemInMainHand());
+                p.sendEquipmentChange(player, EquipmentSlot.OFF_HAND, player.getInventory().getItemInOffHand());
+                p.sendEquipmentChange(player, EquipmentSlot.HEAD, player.getInventory().getHelmet());
+                p.sendEquipmentChange(player, EquipmentSlot.CHEST, player.getInventory().getChestplate());
+                p.sendEquipmentChange(player, EquipmentSlot.LEGS, player.getInventory().getLeggings());
+                p.sendEquipmentChange(player, EquipmentSlot.FEET, player.getInventory().getBoots());
+            }
+        }
     }
 
 
@@ -227,22 +228,8 @@ public class AbilityManager {
      */
     public static void handleEarthGemAbility(Player player) {
         logger.info("Player " + player.getName() + " attempting to use Earth Gem ability");
-
-        // Check for cooldown
-        long remainingCooldown = cooldownManager.getRemainingCooldown(player, GemType.EARTH);
-        if (remainingCooldown > 0) {
-            long secondsLeft = remainingCooldown / 1000;
-            logger.info("Earth Gem on cooldown for " + player.getName() + ": " + secondsLeft + "s remaining");
-
-            // Check if the player has permission to bypass cooldown
-            if (!player.hasPermission("gemmod.cooldown.bypass")) {
-                player.sendMessage(Component.text(String.format("Damage Resistance is on cooldown! %ds left.", secondsLeft)).color(NamedTextColor.RED));
-                player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
-                logger.info("Earth Gem ability denied for " + player.getName() + " due to cooldown");
-                return;
-            } else {
-                logger.info("Player " + player.getName() + " bypassing Earth Gem cooldown with permission");
-            }
+        if (isAbilityOnCooldown(player, GemType.EARTH, "Damage Resistance")) {
+            return;
         }
 
         // Apply maximum resistance effect for invulnerability
@@ -278,22 +265,8 @@ public class AbilityManager {
      */
     public static void handleFireGemAbility(Player player) {
         logger.info("Player " + player.getName() + " attempting to use Fire Gem ability");
-
-        // Check for cooldown
-        long remainingCooldown = cooldownManager.getRemainingCooldown(player, GemType.FIRE);
-        if (remainingCooldown > 0) {
-            long secondsLeft = remainingCooldown / 1000;
-            logger.info("Fire Gem on cooldown for " + player.getName() + ": " + secondsLeft + "s remaining");
-
-            // Check if the player has permission to bypass cooldown
-            if (!player.hasPermission("gemmod.cooldown.bypass")) {
-                player.sendMessage(Component.text(String.format("Fireball is on cooldown! %ds left.", secondsLeft), NamedTextColor.RED));
-                player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
-                logger.info("Fire Gem ability denied for " + player.getName() + " due to cooldown");
-                return;
-            } else {
-                logger.info("Player " + player.getName() + " bypassing Fire Gem cooldown with permission");
-            }
+        if (isAbilityOnCooldown(player, GemType.FIRE, "Fireball")) {
+            return;
         }
 
         // Launch a fireball with high yield and incendiary effect</i>
@@ -333,34 +306,18 @@ public class AbilityManager {
      */
     public static void handleLightGemAbility(Player player) {
         logger.info("Player " + player.getName() + " attempting to use Light Gem ability");
-
-        // Check for cooldown
-        long remainingCooldown = cooldownManager.getRemainingCooldown(player, GemType.LIGHT);
-        if (remainingCooldown > 0) {
-            long secondsLeft = remainingCooldown / 1000;
-            logger.info("Light Gem on cooldown for " + player.getName() + ": " + secondsLeft + "s remaining");
-
-            // Check if the player has permission to bypass cooldown
-            if (!player.hasPermission("gemmod.cooldown.bypass")) {
-                player.sendMessage(Component.text(String.format("Light Gem is on cooldown! %ds left.", secondsLeft), NamedTextColor.RED));
-                player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
-                logger.info("Light Gem ability denied for " + player.getName() + " due to cooldown");
-                return;
-            } else {
-                logger.info("Player " + player.getName() + " bypassing Light Gem cooldown with permission");
-            }
+        if (isAbilityOnCooldown(player, GemType.LIGHT, "Light Gem")) {
+            return;
         }
 
         // Check if the player has a target
-        if (player.getTargetEntity(120) != null && player.getTargetEntity(120) instanceof LivingEntity targetEntity) {
-            logger.info("Player " + player.getName() + " targeting player " + targetEntity.getName() + " with Light Gem");
-        } else {
+        if (!(player.getTargetEntity(120) instanceof LivingEntity targetEntity)) {
             player.sendMessage(Component.text("You must be looking at another player/mob to use the Light Gem!", NamedTextColor.RED));
             logger.info("No valid target found for " + player.getName() + " to use Light Gem");
             return;
         }
 
-        logger.info("Player " + player.getName() + " targeting player " + targetEntity.getName() + " with Light Gem");
+        logger.info("Player " + player.getName() + " targeting entity " + targetEntity.getName() + " with Light Gem");
 
         //Strike the targeted player with lightning multiple times over a short duration
         logger.info("Striking " + targetEntity.getName() + " with lightning bolts");
@@ -401,57 +358,58 @@ public class AbilityManager {
      */
     public static void handleWaterGemAbility(Player player) {
         logger.info("Player " + player.getName() + " attempting to use Water Gem ability");
-        long remainingCooldown = cooldownManager.getRemainingCooldown(player, GemType.WATER);
-        if (remainingCooldown > 0) {
-            long secondsLeft = remainingCooldown / 1000;
-            if (!player.hasPermission("gemmod.cooldown.bypass")) {
-                player.sendMessage(Component.text(String.format("Water Gem is on cooldown! %ds left.", secondsLeft), NamedTextColor.RED));
-                player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
-                return;
-            }
-        }
-
-        if (!(player.getTargetEntity(120) instanceof LivingEntity targetEntity)) {
-            player.sendMessage(Component.text("You must be looking at another player/mob to use the Water Gem!", NamedTextColor.RED));
+        if (isAbilityOnCooldown(player, GemType.WATER, "Water Gem")) {
             return;
         }
 
+        // Find a valid target
+        if (!(player.getTargetEntity(120) instanceof LivingEntity targetEntity)) {
+            player.sendMessage(Component.text("You must be looking at another player/mob to use the Water Gem!", NamedTextColor.RED));
+            logger.info("No valid target found for " + player.getName() + " to use Water Gem");
+            return;
+        }
+        logger.info("Player " + player.getName() + " targeting entity " + targetEntity.getName() + " with Water Gem");
 
-        // Schedule all targetEntity operations on its region thread
+        // Set cooldown immediately
+        cooldownManager.setCooldown(player, GemType.WATER, WATER_COOLDOWN_MILLIS, true);
+        logger.info("Set Water Gem cooldown for " + player.getName() + " for " + (WATER_COOLDOWN_MILLIS / 1000) + " seconds");
+
+        // Schedule all targetEntity operations on its region thread for safety
         targetEntity.getScheduler().run(plugin, scheduledTask -> {
-            Location tempLocation = targetEntity.getLocation();
+            Location freezeLocation = targetEntity.getLocation();
             String targetName = targetEntity.getName();
 
+            // Task to repeatedly teleport the target back to the freeze location
             ScheduledTask freezeTask = targetEntity.getScheduler().runAtFixedRate(plugin, t -> {
-                targetEntity.teleportAsync(tempLocation);
+                targetEntity.teleportAsync(freezeLocation);
             }, null, 1, 1);
 
+            // Task to cancel the freeze effect after the duration
             targetEntity.getScheduler().runDelayed(plugin, t -> {
-                assert freezeTask != null;
-                freezeTask.cancel();
-            }, null, INVULNERABILITY_DURATION_TICKS);
+                if (freezeTask != null) {
+                    freezeTask.cancel();
+                }
+                logger.info("Unfroze entity " + targetName);
+            }, null, WATER_FREEZE_DURATION_TICKS);
 
+            // Play sound and notify target
             targetEntity.getWorld().playSound(targetEntity.getLocation(), Sound.ENTITY_DOLPHIN_SPLASH, 1.0f, 1.0f);
-
             if (targetEntity instanceof Player targetPlayer) {
                 targetPlayer.sendMessage(Component.text()
-                    .append(Component.text("You have been frozen by ", NamedTextColor.BLUE))
-                    .append(Component.text(player.getName(), NamedTextColor.GREEN))
-                    .append(Component.text(" for " + (WATER_FREEZE_DURATION_TICKS / 20) + " seconds!", NamedTextColor.BLUE))
+                        .append(Component.text("You have been frozen by ", NamedTextColor.BLUE))
+                        .append(Component.text(player.getName(), NamedTextColor.GREEN))
+                        .append(Component.text(" for " + (WATER_FREEZE_DURATION_TICKS / 20) + " seconds!", NamedTextColor.BLUE))
                 );
             }
+            logger.info("Froze entity " + targetName);
 
-            // Feedback to the caster (player) can be sent from here, but is safe on player's thread too
+            // Notify the caster (run on main thread for safety, though not strictly necessary)
             Bukkit.getGlobalRegionScheduler().run(plugin, t -> {
                 player.sendMessage(Component.text("You froze ", TextColor.fromHexString("#40c7ff"))
-                    .append(Component.text(targetName, NamedTextColor.GREEN))
-                    .append(Component.text(" for " + (WATER_FREEZE_DURATION_TICKS / 20) + " seconds!", TextColor.fromHexString("#41c7ff")))
+                        .append(Component.text(targetName, NamedTextColor.GREEN))
+                        .append(Component.text(" for " + (WATER_FREEZE_DURATION_TICKS / 20) + " seconds!", TextColor.fromHexString("#41c7ff")))
                 );
             });
-
-
         }, null);
-
-        cooldownManager.setCooldown(player, GemType.WATER, WATER_COOLDOWN_MILLIS, true);
     }
 }
