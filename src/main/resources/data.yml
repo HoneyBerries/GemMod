@@ -13,3 +13,6 @@ gems:
     crafted: false
   water:
     crafted: false
+
+verbose-logging: false
+resourcepack-url: "https://download.mc-packs.net/pack/a11dbe3d078cb0e7bcb38492e1d6f8058c2cdac5.zip"

@@ -9,16 +9,16 @@ import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEn
 import me.honeyberries.gemMod.GemMod;
 import me.honeyberries.gemMod.manager.GemManager;
 import me.honeyberries.gemMod.manager.GemManager.GemType;
+import me.honeyberries.gemMod.util.LogUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
-import java.util.logging.Logger;
 
 /**
  * Manages the passive glowing effect of the Light Gem.
- *
+ * <p>
  * This task runs periodically to give players holding a Light Gem the ability
  * to see other players through walls by applying a glowing effect that is only
  * visible to them.
@@ -33,21 +33,16 @@ public class LightGemTask {
      */
     private static final GemMod plugin = GemMod.getInstance();
 
-    /**
-     * Logger for recording events related to the Light Gem's passive effect.
-     */
-    private static final Logger logger = plugin.getLogger();
-
 
     /**
      * Starts a recurring task that manages the Light Gem's glowing effect.
-     *
+     * <p>
      * The task runs every second to check all online players. If a player is holding
      * a Light Gem, it makes all other players glow for them. If they are not,
      * it removes any glowing effects they may have been seeing.
      */
     public static void startLightGemTask() {
-        logger.info("Starting Light Gem passive effect task");
+        LogUtil.verbose("Starting Light Gem passive effect task");
 
         plugin.getServer().getGlobalRegionScheduler().runAtFixedRate(plugin, scheduledTask -> {
             for (Player player : Bukkit.getOnlinePlayers()) {
@@ -62,7 +57,7 @@ public class LightGemTask {
             }
         }, 20L, 20L);
 
-        logger.info("Light Gem passive effect task started successfully");
+        LogUtil.verbose("Light Gem passive effect task started successfully");
     }
 
     /**
@@ -73,7 +68,7 @@ public class LightGemTask {
      * @param glowing {@code true} to enable glowing, {@code false} to disable it.
      */
     private static void setPlayerGlowing(final Player viewer, final Player target, final boolean glowing) {
-        final EntityData<Byte> entityData = getPlayerEntityData(target, glowing);
+        final EntityData<@NotNull Byte> entityData = getPlayerEntityData(target, glowing);
         final List<EntityData<?>> metadata = List.of(entityData);
 
         final int id = target.getEntityId();
@@ -91,7 +86,7 @@ public class LightGemTask {
      * @param glowing {@code true} to set the glowing flag, {@code false} to unset it.
      * @return A new {@link EntityData} object with the updated flags.
      */
-    private static @NotNull EntityData<Byte> getPlayerEntityData(Player player, boolean glowing) {
+    private static @NotNull EntityData<@NotNull Byte> getPlayerEntityData(Player player, boolean glowing) {
 
         final byte flags = (byte) ((player.getFireTicks() > 0 ? 0x01 : 0) |
                 (player.isSneaking() ? 0x02 : 0) | (player.isSprinting() ? 0x08 : 0) |

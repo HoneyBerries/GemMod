@@ -5,6 +5,7 @@ import me.honeyberries.gemMod.configuration.GemModData;
 import me.honeyberries.gemMod.manager.GemManager;
 import me.honeyberries.gemMod.manager.GemManager.GemType;
 import me.honeyberries.gemMod.recipe.GemRecipe;
+import me.honeyberries.gemMod.util.LogUtil;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.title.Title;
@@ -64,7 +65,7 @@ public class GemCraftListener implements Listener {
 
 
         // Log the crafting event and send a broadcast message to all players
-        plugin.getLogger().info(gemType.name() + " gem crafted and recipe removed.");
+        LogUtil.verbose(gemType.name() + " gem crafted and recipe removed.");
 
         String aCase = gemType.name().substring(1).toLowerCase();
 

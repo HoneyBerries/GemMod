@@ -3,6 +3,7 @@ package me.honeyberries.gemMod.configuration;
 import me.honeyberries.gemMod.GemMod;
 import me.honeyberries.gemMod.manager.GemManager.GemType;
 import me.honeyberries.gemMod.recipe.GemRecipe;
+import me.honeyberries.gemMod.util.LogUtil;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;
 import java.io.File;
@@ -41,6 +42,10 @@ public class GemModData {
      */
     private static final Object fileLock = new Object();
 
+    // Cached config values
+    private static volatile boolean verboseLogging = false;
+    private static volatile String resourcePackUrl = null;
+
     /**
      * Loads gem data from the {@code data.yml} file into memory.
      *
@@ -58,7 +63,15 @@ public class GemModData {
             // Other initialization...
             yamlConfig = YamlConfiguration.loadConfiguration(dataFile);
 
-            plugin.getLogger().info("---------- Loading gem data ----------");
+            LogUtil.info("---------- Loading gem data ----------");
+
+            // Load top-level config values
+            verboseLogging = yamlConfig.getBoolean("verbose-logging", false);
+            // fallback to plugin's default URL if not present
+            String configuredUrl = yamlConfig.getString("resourcepack-url");
+            resourcePackUrl = configuredUrl != null && !configuredUrl.isBlank()
+                    ? configuredUrl
+                    : null;
 
             // Load crafted status from config
             gemCraftedMap.clear();
@@ -66,9 +79,12 @@ public class GemModData {
                 String path = "gems." + type.name().toLowerCase() + ".crafted";
                 boolean crafted = yamlConfig.getBoolean(path, false);
                 gemCraftedMap.put(type, crafted);
-                plugin.getLogger().info(type.name() + " gem crafted: " + crafted);
+                // verbose: per-gem crafted status
+                if (isVerboseLoggingEnabled()) {
+                    LogUtil.info(type.name() + " gem crafted: " + crafted);
+                }
             }
-            plugin.getLogger().info("---------- Gem data loaded ----------");
+            LogUtil.info("---------- Gem data loaded ----------");
         }
     }
 
@@ -87,7 +103,7 @@ public class GemModData {
             if (yamlConfig == null) {
                 loadData();
                 if (yamlConfig == null) {
-                    plugin.getLogger().severe("Failed to load configuration for saving!");
+                    LogUtil.severe("Failed to load configuration for saving!");
                     return;
                 }
             }
@@ -107,7 +123,7 @@ public class GemModData {
             try {
                 yamlConfig.save(dataFile);
             } catch (IOException e) {
-                plugin.getLogger().severe("Failed to save configuration file: " + e.getMessage());
+                LogUtil.severe("Failed to save configuration file: " + e.getMessage());
             }
         }
     }
@@ -153,5 +169,19 @@ public class GemModData {
             }
             saveConfig();
         }
+    }
+
+    /**
+     * Whether verbose logging is enabled according to data.yml.
+     */
+    public static boolean isVerboseLoggingEnabled() {
+        return verboseLogging;
+    }
+
+    /**
+     * Configured resource pack URL from data.yml, or null if not set.
+     */
+    public static String getResourcePackUrl() {
+        return resourcePackUrl;
     }
 }

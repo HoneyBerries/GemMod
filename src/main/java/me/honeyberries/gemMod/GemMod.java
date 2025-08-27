@@ -1,7 +1,6 @@
 package me.honeyberries.gemMod;
 
 import com.github.retrooper.packetevents.PacketEvents;
-import com.github.retrooper.packetevents.settings.PacketEventsSettings;
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import me.honeyberries.gemMod.command.GemCommand;
@@ -10,6 +9,7 @@ import me.honeyberries.gemMod.configuration.GemModData;
 import me.honeyberries.gemMod.listener.*;
 import me.honeyberries.gemMod.recipe.GemRecipe;
 import me.honeyberries.gemMod.task.*;
+import me.honeyberries.gemMod.util.LogUtil;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -19,7 +19,6 @@ import java.net.URI;
 import java.security.MessageDigest;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
 
 /**
  * Main class for the GemMod plugin.
@@ -29,12 +28,12 @@ public final class GemMod extends JavaPlugin {
 
     private final Map<String, Boolean> enabledFeatures = new ConcurrentHashMap<>();
     private String resourcePackSha1;
-    private static final String RESOURCE_PACK_URL = "https://honeyberries.net/data/gemmodassets.zip";
+    private static final String RESOURCE_PACK_URL = "https://download.mc-packs.net/pack/a11dbe3d078cb0e7bcb38492e1d6f8058c2cdac5.zip";
 
     @Override
     public void onLoad() {
         // Initialize the PacketEvents API
-        getLogger().info("Initializing PacketEvents API...");
+        LogUtil.info("Initializing PacketEvents API...");
         registerComponent("packetEvents", "PacketEvents API loaded successfully pre-enable", () -> {
             PacketEvents.setAPI(SpigotPacketEventsBuilder.build(this));
             PacketEvents.getAPI().getSettings().checkForUpdates(false);
@@ -44,19 +43,18 @@ public final class GemMod extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        getLogger().info("\n---------- GemMod Enabled ----------\n");
+        LogUtil.info("\n---------- GemMod Enabled ----------\n");
 
-        // Compute SHA-1 for resource pack
-        resourcePackSha1 = computeResourcePackSha1();
-        if (resourcePackSha1 != null) {
-            getLogger().info("Resource pack SHA-1: " + resourcePackSha1);
-        } else {
-            getLogger().warning("Resource pack SHA-1 could not be determined. Resource pack enforcement may fail.");
-        }
-
-        // Load configuration data
+        // Load configuration data first so we can honor resourcepack-url and verbose-logging
         registerComponent("configuration", "Configuration files loaded successfully", GemModData::loadData);
 
+        // Compute SHA-1 for resource pack using configured URL if present
+        resourcePackSha1 = computeResourcePackSha1();
+        if (resourcePackSha1 != null) {
+            LogUtil.info("Resource pack SHA-1: " + resourcePackSha1);
+        } else {
+            LogUtil.warn("Resource pack SHA-1 could not be determined. Resource pack enforcement may fail.");
+        }
 
         // Initialize PacketEvents API if previously loaded
         if (isFeatureEnabled("packetEvents")) {
@@ -72,36 +70,36 @@ public final class GemMod extends JavaPlugin {
         // Log which features were successfully enabled
         logEnabledFeatures();
 
-        getLogger().info("\n\n---------- GemMod Initialization Complete ----------\n\n");
+        LogUtil.info("\n\n---------- GemMod Initialization Complete ----------\n\n");
     }
 
     @Override
     public void onDisable() {
-        getLogger().info("---------- GemMod Disabling ----------");
+        LogUtil.info("---------- GemMod Disabling ----------");
 
         try {
-            getLogger().info("Cancelling all scheduled tasks...");
+            LogUtil.info("Cancelling all scheduled tasks...");
             getServer().getGlobalRegionScheduler().cancelTasks(this);
-            getLogger().info("Tasks cancelled");
+            LogUtil.info("Tasks cancelled");
         } catch (Exception e) {
-            getLogger().log(Level.SEVERE, "Error cancelling tasks", e);
+            LogUtil.severe("Error cancelling tasks: " + e.getMessage());
         }
 
         // Disable the PacketEvents API if it was enabled
         if (isFeatureEnabled("packetEvents")) {
             try {
                 PacketEvents.getAPI().terminate();
-                getLogger().info("PacketEvents API terminated");
+                LogUtil.info("PacketEvents API terminated");
             } catch (Exception e) {
-                getLogger().log(Level.SEVERE, "Error terminating PacketEvents API", e);
+                LogUtil.severe("Error terminating PacketEvents API: " + e.getMessage());
             }
         }
 
-        getLogger().info("GemMod disabled. Thank you for using GemMod!");
+        LogUtil.info("GemMod disabled. Thank you for using GemMod!");
     }
 
     private void registerCommands() {
-        getLogger().info("Registering commands...");
+        LogUtil.info("Registering commands...");
         registerComponent("gemmodCommand", "Registered /gemmod command", () ->
                 getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS,
                         commands -> commands.registrar().register(GemModCommand.getBuildCommand())));
@@ -112,7 +110,7 @@ public final class GemMod extends JavaPlugin {
     }
 
     private void registerEventListeners() {
-        getLogger().info("Registering event listeners...");
+        LogUtil.info("Registering event listeners...");
         registerComponent("resourcepack", "Registered resource pack download listener (PlayerJoinListener)",
                 () -> getServer().getPluginManager().registerEvents(new PlayerJoinListener(), this));
 
@@ -133,12 +131,12 @@ public final class GemMod extends JavaPlugin {
     }
 
     private void registerRecipes() {
-        getLogger().info("Registering gem recipes...");
+        LogUtil.info("Registering gem recipes...");
         registerComponent("gemRecipes", "Gem recipes registered.", GemRecipe::registerGemRecipes);
     }
 
     private void scheduleTasks() {
-        getLogger().info("Scheduling recurring tasks...");
+        LogUtil.info("Scheduling recurring tasks...");
         registerComponent("earthGemTask", "Started Earth Gem task", EarthGemTask::startEarthGemTask);
         registerComponent("fireGemTask", "Started Fire Gem task", FireGemTask::startFireGemTask);
         registerComponent("waterGemTask", "Started Water Gem task", WaterGemTask::startWaterGemTask);
@@ -146,7 +144,7 @@ public final class GemMod extends JavaPlugin {
         if (isFeatureEnabled("packetEvents")) {
             registerComponent("lightGemTask", "Started Light Gem task", LightGemTask::startLightGemTask);
         } else {
-            getLogger().warning("Skipping Light Gem task: PacketEvents is not enabled.");
+            LogUtil.warn("Skipping Light Gem task: PacketEvents is not enabled.");
             setFeatureEnabled("lightGem", false);
         }
     }
@@ -154,16 +152,16 @@ public final class GemMod extends JavaPlugin {
     private void registerComponent(String feature, String successMessage, Runnable registrationLogic) {
         try {
             registrationLogic.run();
-            getLogger().info(successMessage);
+            LogUtil.info(successMessage);
             setFeatureEnabled(feature, true);
         } catch (Exception e) {
-            getLogger().log(Level.SEVERE, "Failed to initialize " + feature, e);
+            LogUtil.severe("Failed to initialize " + feature + ": " + e.getMessage());
             setFeatureEnabled(feature, false);
         }
     }
 
     private String computeResourcePackSha1() {
-        try (InputStream in = URI.create(RESOURCE_PACK_URL).toURL().openStream()) {
+        try (InputStream in = URI.create(getResourcePackUrl()).toURL().openStream()) {
             MessageDigest digest = MessageDigest.getInstance("SHA-1");
             byte[] buffer = new byte[8192];
             int read;
@@ -177,13 +175,13 @@ public final class GemMod extends JavaPlugin {
             }
             return sb.toString();
         } catch (Exception e) {
-            getLogger().severe("Failed to compute SHA-1 for resource pack: " + e.getMessage());
+            LogUtil.severe("Failed to compute SHA-1 for resource pack: " + e.getMessage());
             return null;
         }
     }
 
     private void logEnabledFeatures() {
-        getLogger().info("\n---------- GemMod Feature Status ----------");
+        LogUtil.info("\n---------- GemMod Feature Status ----------");
         enabledFeatures.entrySet().stream()
                 .sorted(Map.Entry.comparingByKey())
                 .forEach(entry -> {
@@ -192,6 +190,12 @@ public final class GemMod extends JavaPlugin {
                             Component.text(entry.getKey() + ": " + (entry.getValue() ? "ENABLED :)" : "DISABLED :("), color)
                     );
                 });
+    }
+
+    public String getResourcePackUrl() {
+        // prefer configured URL from data.yml if present
+        String configured = GemModData.getResourcePackUrl();
+        return configured != null ? configured : RESOURCE_PACK_URL;
     }
 
     public String getResourcePackSha1() {

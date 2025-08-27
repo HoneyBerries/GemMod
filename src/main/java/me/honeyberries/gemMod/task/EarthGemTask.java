@@ -3,6 +3,7 @@ package me.honeyberries.gemMod.task;
 import me.honeyberries.gemMod.GemMod;
 import me.honeyberries.gemMod.manager.GemManager;
 import me.honeyberries.gemMod.manager.GemManager.GemType;
+import me.honeyberries.gemMod.util.LogUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -37,11 +38,12 @@ public class EarthGemTask {
 
     /**
      * Starts a recurring task that grants passive effects to players holding an Earth Gem.
-     *
+     * <p>
      * The task runs every tick to check all online players. If a player has an
      * Earth Gem, it applies Haste, Speed, and Strength effects to them.
      */
     public static void startEarthGemTask() {
+        LogUtil.verbose("Starting Earth Gem passive effect task");
         plugin.getServer().getGlobalRegionScheduler().runAtFixedRate(plugin, scheduledTask -> {
             Bukkit.getOnlinePlayers().forEach(player -> {
                 if (GemManager.hasGem(player, GemType.EARTH)) {
@@ -49,11 +51,12 @@ public class EarthGemTask {
                 }
             });
         }, 1, 1); // Run every tick (1 tick delay, 1 tick interval)
+        LogUtil.verbose("Earth Gem passive effect task started");
     }
 
     /**
      * Applies Haste, Speed, and Strength potion effects to the specified player.
-     *
+     * <p>
      * The effects are applied on the player's region thread to ensure thread safety.
      *
      * @param player The player to whom the effects will be applied.

@@ -1,8 +1,8 @@
 package me.honeyberries.gemMod.listener;
 
-import me.honeyberries.gemMod.GemMod;
 import me.honeyberries.gemMod.manager.CooldownManager;
 import me.honeyberries.gemMod.manager.GemManager;
+import me.honeyberries.gemMod.util.LogUtil;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -18,10 +18,6 @@ import me.honeyberries.gemMod.manager.GemManager.GemType;
 @Deprecated(since = "1.0", forRemoval = true)
 public class EarthGemListener implements Listener {
 
-    /**
-     * A reference to the main plugin instance.
-     */
-    private final GemMod plugin = GemMod.getInstance();
 
     /**
      * A reference to the cooldown manager for handling gem cooldowns.
@@ -52,7 +48,7 @@ public class EarthGemListener implements Listener {
         if (remainingCooldown > 60_000) {
             // Cancel damage while Earth gem protection is active
             event.setCancelled(true);
-            plugin.getLogger().info("Earth gem protection applied to " + player.getName());
+            LogUtil.verbose("Earth gem protection applied to " + player.getName());
         }
     }
 }

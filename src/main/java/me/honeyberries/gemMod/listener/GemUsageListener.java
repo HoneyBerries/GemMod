@@ -5,6 +5,7 @@ import me.honeyberries.gemMod.manager.AbilityManager;
 import me.honeyberries.gemMod.manager.CooldownManager;
 import me.honeyberries.gemMod.manager.GemManager.GemType;
 import me.honeyberries.gemMod.manager.GemManager;
+import me.honeyberries.gemMod.util.LogUtil;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -14,11 +15,9 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.event.Event.Result;
 
-import java.util.logging.Level;
-
 /**
  * Handles the activation of gem abilities upon player interaction.
- *
+ * <p>
  * This listener detects right-click actions with a gem in the main hand,
  * cancels the default interaction, and triggers the corresponding ability.
  * It also prevents gem usage from the off-hand to avoid conflicts.
@@ -70,9 +69,11 @@ public class GemUsageListener implements Listener {
         event.setCancelled(true);
 
         // We only trigger the ability if the interaction was with the main hand.
-        if (event.getHand() != EquipmentSlot.MAIN_HAND) {
+        if (event.getHand() != EquipmentSlot.HAND) {
             return;
         }
+
+        LogUtil.verbose("Player " + player.getName() + " used " + gemType.name() + " gem");
 
         // Execute the ability associated with the identified gem type.
         switch (gemType) {
@@ -83,7 +84,7 @@ public class GemUsageListener implements Listener {
             case LIGHT -> AbilityManager.handleLightGemAbility(player);
             case WATER -> AbilityManager.handleWaterGemAbility(player);
             default -> {
-                plugin.getLogger().log(Level.SEVERE, "Unknown gem type: " + gemType);
+                LogUtil.severe("Unknown gem type: " + gemType);
                 player.sendMessage("Unknown gem type!");
             }
         }

@@ -8,9 +8,9 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
-import me.honeyberries.gemMod.GemMod;
 import me.honeyberries.gemMod.manager.GemManager;
 import me.honeyberries.gemMod.manager.GemManager.GemType;
+import me.honeyberries.gemMod.util.LogUtil;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
@@ -130,7 +130,7 @@ public class GemCommand {
         // Add the gem to the target player's inventory.
         player.getInventory().addItem(GemManager.createGem(gemType, amount));
         sender.sendMessage(Component.text(String.format("Given %d %s Gem(s) to %s", amount, capitalize(gemTypeStr), player.getName()), NamedTextColor.GREEN));
-        GemMod.getInstance().getLogger().info(String.format("%s gave %d %s Gem(s) to %s", sender.getName(), amount, gemTypeStr, player.getName()));
+        LogUtil.verbose(String.format("%s gave %d %s Gem(s) to %s", sender.getName(), amount, gemTypeStr, player.getName()));
     }
 
     /**

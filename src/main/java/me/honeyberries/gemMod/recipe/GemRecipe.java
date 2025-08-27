@@ -5,7 +5,7 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import me.honeyberries.gemMod.manager.GemManager;
 import me.honeyberries.gemMod.manager.GemManager.*;
-import java.util.logging.Logger;
+import me.honeyberries.gemMod.util.LogUtil;
 import me.honeyberries.gemMod.GemMod;
 import org.bukkit.inventory.ShapedRecipe;
 
@@ -25,9 +25,6 @@ public class GemRecipe {
 
     /** Reference to the main plugin instance */
     private static final GemMod plugin = GemMod.getInstance();
-
-    /** Logger for recording events related to gem recipes */
-    private static final Logger logger = plugin.getLogger();
 
     /** Namespaced keys for the gem crafting recipes */
     public static NamespacedKey airGemKey = new NamespacedKey(plugin, "air_gem");
@@ -59,7 +56,7 @@ public class GemRecipe {
             }
         }
 
-        logger.info("Gem crafting recipes registered based on crafted status");
+        LogUtil.info("Gem crafting recipes registered based on crafted status");
     }
 
     /**

@@ -4,6 +4,7 @@ import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import me.honeyberries.gemMod.GemMod;
 import me.honeyberries.gemMod.manager.GemManager;
 import me.honeyberries.gemMod.manager.GemManager.GemType;
+import me.honeyberries.gemMod.util.LogUtil;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -14,7 +15,6 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
-import java.util.logging.Logger;
 
 /**
  * Handles the passive effects of the Darkness Gem when attacking other players.
@@ -32,10 +32,6 @@ public class DarknessGemListener implements Listener {
      */
     private final GemMod plugin = GemMod.getInstance();
 
-    /**
-     * Logger for recording events related to the Darkness Gem's passive effect.
-     */
-    private final Logger logger = plugin.getLogger();
 
     /**
      * The duration of the Darkness Gem's passive effect, in ticks. (5 seconds)
@@ -55,24 +51,24 @@ public class DarknessGemListener implements Listener {
     public void onPlayerAttack(EntityDamageByEntityEvent event) {
         // Check if the damaged entity is a player and if the attacker is also a player
         if (event.getEntity() instanceof Player damagedPlayer && event.getDamager() instanceof Player attacker) {
-            logger.info("Player " + attacker.getName() + " attacked player " + damagedPlayer.getName());
+            LogUtil.verbose("Player " + attacker.getName() + " attacked player " + damagedPlayer.getName());
 
             // Check if the attacker has the Darkness Gem in their inventory
             if (GemManager.hasGem(attacker, GemType.DARKNESS)) {
-                logger.info("Attacker " + attacker.getName() + " has Darkness Gem - applying blindness effect");
+                LogUtil.verbose("Attacker " + attacker.getName() + " has Darkness Gem - applying blindness effect");
 
                 // Apply blindness effect to the damaged player (level 1, 5 seconds)
                 damagedPlayer.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 100, 1));
-                logger.info("Applied blindness effect to " + damagedPlayer.getName() + " for 5 seconds");
+                LogUtil.verbose("Applied blindness effect to " + damagedPlayer.getName() + " for 5 seconds");
 
                 // Spawn particles directly in front of the player's view to obstruct vision
 
 
                 // Create a denser cloud of black particles
-                logger.info("Starting particle blindness task for " + damagedPlayer.getName());
+                LogUtil.verbose("Starting particle blindness task for " + damagedPlayer.getName());
                 ScheduledTask particleBlindnessTask = damagedPlayer.getScheduler().runAtFixedRate(plugin, scheduledTask -> {
                     if (!damagedPlayer.isOnline()) {
-                        logger.info("Player " + damagedPlayer.getName() + " went offline, cancelling particle blindness task");
+                        LogUtil.verbose("Player " + damagedPlayer.getName() + " went offline, cancelling particle blindness task");
                         scheduledTask.cancel();
                         return;
                     }
@@ -100,17 +96,16 @@ public class DarknessGemListener implements Listener {
                 }, null, 1L, 1);
 
                 // Cancel the task after the duration
-                logger.info(String.format("Scheduling particle effect removal for " +
-                        "%s in %d seconds", damagedPlayer.getName(),
-                        Math.round(DARKNESS_GEM_PASSIVE_EFFECT_DURATION / 20.0)));
+                LogUtil.verbose(String.format("Scheduling particle effect removal for %s in %d seconds",
+                        damagedPlayer.getName(), Math.round(DARKNESS_GEM_PASSIVE_EFFECT_DURATION / 20.0)));
                 plugin.getServer().getGlobalRegionScheduler().runDelayed(plugin, task -> {
 
                 assert particleBlindnessTask != null;
                 particleBlindnessTask.cancel();
-                logger.info("Particle blindness effect removed from " + damagedPlayer.getName());
+                LogUtil.verbose("Particle blindness effect removed from " + damagedPlayer.getName());
             }, DARKNESS_GEM_PASSIVE_EFFECT_DURATION);
 
-                logger.info("Darkness Gem passive effect successfully applied: " + damagedPlayer.getName() + " blinded by " + attacker.getName());
+                LogUtil.verbose("Darkness Gem passive effect applied: " + damagedPlayer.getName() + " blinded by " + attacker.getName());
             }
         }
     }

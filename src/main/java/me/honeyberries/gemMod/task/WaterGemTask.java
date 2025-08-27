@@ -2,6 +2,7 @@ package me.honeyberries.gemMod.task;
 
 import me.honeyberries.gemMod.GemMod;
 import me.honeyberries.gemMod.manager.GemManager;
+import me.honeyberries.gemMod.util.LogUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
@@ -32,6 +33,7 @@ public class WaterGemTask {
      * Water Gem, it applies Water Breathing and Dolphin's Grace effects to them.
      */
     public static void startWaterGemTask() {
+        LogUtil.verbose("Starting Water Gem passive effect task");
         plugin.getServer().getGlobalRegionScheduler().runAtFixedRate(plugin, scheduledTask -> {
             for (Player player : Bukkit.getOnlinePlayers()) {
                 if (GemManager.hasGem(player, GemManager.GemType.WATER)) {
@@ -46,6 +48,7 @@ public class WaterGemTask {
                 }
             }
         }, 1, 1); // Run every tick (1 tick delay, 1 tick interval)
+        LogUtil.verbose("Water Gem passive effect task started");
     }
 
 

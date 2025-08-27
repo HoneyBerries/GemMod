@@ -3,6 +3,7 @@ package me.honeyberries.gemMod.task;
 import me.honeyberries.gemMod.GemMod;
 import me.honeyberries.gemMod.manager.GemManager;
 import me.honeyberries.gemMod.manager.GemManager.GemType;
+import me.honeyberries.gemMod.util.LogUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
@@ -31,6 +32,7 @@ public class FireGemTask {
      * Fire Gem, it applies a fire resistance effect to them.
      */
     public static void startFireGemTask() {
+        LogUtil.verbose("Starting Fire Gem passive effect task");
         plugin.getServer().getGlobalRegionScheduler().runAtFixedRate(plugin, scheduledTask -> {
             for (Player player : Bukkit.getOnlinePlayers()) {
                 if (GemManager.hasGem(player, GemType.FIRE)) {
@@ -42,5 +44,6 @@ public class FireGemTask {
                 }
             }
         }, 1, 1); // Run every tick (1 tick delay, 1 tick interval)
+        LogUtil.verbose("Fire Gem passive effect task started");
     }
 }

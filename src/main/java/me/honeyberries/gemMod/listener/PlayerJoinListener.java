@@ -12,6 +12,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import me.honeyberries.gemMod.configuration.GemModData;
 import me.honeyberries.gemMod.manager.GemManager.GemType;
 import me.honeyberries.gemMod.recipe.GemRecipe;
+import me.honeyberries.gemMod.util.LogUtil;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -38,6 +39,7 @@ public class PlayerJoinListener implements Listener {
 
     private final GemMod plugin = GemMod.getInstance();
 
+
     public PlayerJoinListener() {
     }
 
@@ -59,10 +61,10 @@ public class PlayerJoinListener implements Listener {
     public void onPlayerConfig(AsyncPlayerConnectionConfigureEvent event) {
         Audience audience = event.getConnection().getAudience();
 
-        URI rpURI = URI.create("https://honeyberries.net/data/gemmodassets.zip");
+        URI rpURI = URI.create(plugin.getResourcePackUrl());
         String sha1 = plugin.getResourcePackSha1();
         if (sha1 == null) {
-            plugin.getLogger().warning("Resource pack SHA-1 is not available. Skipping resource pack enforcement.");
+            LogUtil.warn("Resource pack SHA-1 is not available. Skipping resource pack enforcement.");
             return;
         }
         UUID rpUUID = UUID.nameUUIDFromBytes(sha1.getBytes());
@@ -102,7 +104,7 @@ public class PlayerJoinListener implements Listener {
             boolean finished = latch.await(60, TimeUnit.SECONDS);
 
             if (!finished) {
-                plugin.getLogger().warning("Player " + playerId + " did not respond to resource pack request in time.");
+                LogUtil.warn("Player " + playerId + " did not respond to resource pack request in time.");
                 event.getConnection().disconnect(
                         Component.text("Timed out waiting for resource pack response.", NamedTextColor.RED)
                 );
@@ -151,7 +153,7 @@ public class PlayerJoinListener implements Listener {
         // Run on the player's region scheduler to be safe.
         player.getScheduler().run(plugin, task -> {
             discoverAvailableRecipes(player);
-        }, null, null);
+        }, null);
     }
 
     /**
@@ -172,7 +174,7 @@ public class PlayerJoinListener implements Listener {
         if (discoverRecipeIfUncrafted(player, GemType.WATER, GemRecipe.waterGemKey, craftedStatus)) discoveredCount++;
 
         if (discoveredCount > 0) {
-            plugin.getLogger().info("Discovered " + discoveredCount + " available gem recipes for " + player.getName());
+            LogUtil.verbose("Discovered " + discoveredCount + " available gem recipes for " + player.getName());
         }
     }
 

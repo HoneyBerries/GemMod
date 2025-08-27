@@ -1,8 +1,6 @@
 package me.honeyberries.gemMod.listener;
 
-import me.honeyberries.gemMod.GemMod;
-import me.honeyberries.gemMod.manager.GemManager.GemType;
-import me.honeyberries.gemMod.manager.GemManager;
+import me.honeyberries.gemMod.util.LogUtil;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -20,11 +18,6 @@ import org.bukkit.event.entity.EntityDamageEvent;
 public class AirGemListener implements Listener {
 
     /**
-     * A reference to the main plugin instance, used for logging and other plugin-related operations.
-     */
-    private final GemMod plugin = GemMod.getInstance();
-
-    /**
      * Prevents fall and fly-into-wall damage for players holding an Air Gem.
      *
      * This event handler checks if the damaged entity is a player and if they have an Air Gem
@@ -38,12 +31,12 @@ public class AirGemListener implements Listener {
         // Check if the damaged entity is a player
         if (event.getEntity() instanceof Player player) {
             // Check if the player has the Air Gem in their inventory
-            if (GemManager.hasGem(player, GemType.AIR)) {
+            if (me.honeyberries.gemMod.manager.GemManager.hasGem(player, me.honeyberries.gemMod.manager.GemManager.GemType.AIR)) {
                 // Only cancel damage if the cause is falling or flying into a wall
                 if (event.getCause() == EntityDamageEvent.DamageCause.FALL
                         || event.getCause() == EntityDamageEvent.DamageCause.FLY_INTO_WALL) {
                     event.setCancelled(true); // Cancel the fall or fly-into-wall damage
-                    plugin.getLogger().info("Fall or fly-into-wall damage cancelled for player: " + player.getName());
+                    LogUtil.verbose("Fall or fly-into-wall damage cancelled for player: " + player.getName());
                 }
             }
         }

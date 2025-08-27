@@ -17,7 +17,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 import me.honeyberries.gemMod.manager.GemManager.GemType;
-import java.util.logging.Logger;
+import me.honeyberries.gemMod.util.LogUtil;
 
 /**
  * <b>AbilityManager</b> is responsible for executing the special abilities associated with different gem types.
@@ -38,7 +38,6 @@ public class AbilityManager {
     // Static references
     private static final CooldownManager cooldownManager = CooldownManager.getInstance();
     private static final GemMod plugin = GemMod.getInstance();
-    private static final Logger logger = plugin.getLogger();
 
     // Duration of cooldown constants
     private static final long AIR_COOLDOWN_MILLIS = 15_000; // 15 seconds
@@ -70,16 +69,16 @@ public class AbilityManager {
         }
 
         long secondsLeft = remainingCooldown / 1000;
-        logger.info(String.format("%s on cooldown for %s: %ds remaining", abilityName, player.getName(), secondsLeft));
+        LogUtil.verbose(String.format("%s on cooldown for %s: %ds remaining", abilityName, player.getName(), secondsLeft));
 
         if (player.hasPermission("gemmod.cooldown.bypass")) {
-            logger.info(String.format("Player %s bypassing %s cooldown with permission", player.getName(), abilityName));
+            LogUtil.verbose(String.format("Player %s bypassing %s cooldown with permission", player.getName(), abilityName));
             return false;
         }
 
         player.sendMessage(Component.text(String.format("%s is on cooldown! %ds left.", abilityName, secondsLeft), NamedTextColor.RED));
         player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
-        logger.info(String.format("%s ability denied for %s due to cooldown", abilityName, player.getName()));
+        LogUtil.verbose(String.format("%s ability denied for %s due to cooldown", abilityName, player.getName()));
         return true;
     }
 
@@ -97,7 +96,7 @@ public class AbilityManager {
      * @param player The player using the Air Gem ability
      */
     public static void handleAirGemAbility(Player player) {
-        logger.info("Player " + player.getName() + " attempting to use Air Gem ability");
+        LogUtil.verbose("Player " + player.getName() + " attempting to use Air Gem ability");
         if (isAbilityOnCooldown(player, GemType.AIR, "Double jump")) {
             return;
         }
@@ -107,13 +106,13 @@ public class AbilityManager {
         Vector direction = player.getLocation().getDirection().normalize();
         Vector velocity = direction.multiply(boostSpeed);
         player.setVelocity(velocity);
-        logger.info("Applied velocity boost to " + player.getName() + ": " + velocity);
+        LogUtil.verbose("Applied velocity boost to " + player.getName() + ": " + velocity);
 
         // Set cooldown and provide feedback
         cooldownManager.setCooldown(player, GemType.AIR, AIR_COOLDOWN_MILLIS, true);
         player.getWorld().playSound(player.getLocation(), Sound.ENTITY_WIND_CHARGE_THROW, 1.0f, 1.0f);
         player.sendMessage(Component.text("You used the Double Jump!", TextColor.fromHexString("#90e1e1")));
-        logger.info("Air Gem ability successfully used by " + player.getName() + ", cooldown set for " + (AIR_COOLDOWN_MILLIS / 1000) + "s");
+        LogUtil.verbose("Air Gem ability successfully used by " + player.getName() + ", cooldown set for " + (AIR_COOLDOWN_MILLIS / 1000) + "s");
     }
 
 
@@ -132,20 +131,20 @@ public class AbilityManager {
      * @param player The player using the Darkness Gem ability
      */
     public static void handleDarknessGemAbility(Player player) {
-        logger.info("Player " + player.getName() + " attempting to use Darkness Gem ability");
+        LogUtil.verbose("Player " + player.getName() + " attempting to use Darkness Gem ability");
         if (isAbilityOnCooldown(player, GemType.DARKNESS, "Darkness Gem")) {
             return;
         }
 
         // Apply invisibility and start hiding equipment
         player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, INVISIBILITY_DURATION_TICKS, 0, false, false, true));
-        logger.info("Applied invisibility effect to " + player.getName() + " for " + (INVISIBILITY_DURATION_TICKS / 20) + " seconds");
+        LogUtil.verbose("Applied invisibility effect to " + player.getName() + " for " + (INVISIBILITY_DURATION_TICKS / 20) + " seconds");
 
         ScheduledTask playerHideTask = startEquipmentHidingTask(player);
 
         // Set cooldown
         cooldownManager.setCooldown(player, GemType.DARKNESS, DARKNESS_COOLDOWN_MILLIS, true);
-        logger.info("Set Darkness Gem cooldown for " + player.getName() + " for " + (DARKNESS_COOLDOWN_MILLIS / 1000) + " seconds");
+        LogUtil.verbose("Set Darkness Gem cooldown for " + player.getName() + " for " + (DARKNESS_COOLDOWN_MILLIS / 1000) + " seconds");
 
         // Schedule task to remove effects after duration
         scheduleEffectRemoval(player, playerHideTask);
@@ -153,14 +152,14 @@ public class AbilityManager {
         // Notify the player
         player.getWorld().playSound(player.getLocation(), Sound.BLOCK_GRINDSTONE_USE, 1.0f, 1.0f);
         player.sendMessage(Component.text(String.format("You are now Invisible for %d seconds!", INVISIBILITY_DURATION_TICKS / 20), TextColor.fromHexString("#12375e")));
-        logger.info("Darkness Gem ability successfully activated for " + player.getName());
+        LogUtil.verbose("Darkness Gem ability successfully activated for " + player.getName());
     }
 
     private static ScheduledTask startEquipmentHidingTask(Player player) {
-        logger.info("Starting equipment hiding task for " + player.getName());
+        LogUtil.verbose("Starting equipment hiding task for " + player.getName());
         return player.getServer().getGlobalRegionScheduler().runAtFixedRate(plugin, scheduledTask -> {
             if (!player.isOnline()) {
-                logger.info("Player " + player.getName() + " went offline, cancelling equipment hiding task");
+                LogUtil.warn("Player " + player.getName() + " went offline, cancelling equipment hiding task");
                 scheduledTask.cancel();
                 return;
             }
@@ -169,9 +168,9 @@ public class AbilityManager {
     }
 
     private static void scheduleEffectRemoval(Player player, ScheduledTask playerHideTask) {
-        logger.info("Scheduling invisibility removal task for " + player.getName() + " in " + (INVISIBILITY_DURATION_TICKS / 20) + " seconds");
+        LogUtil.verbose("Scheduling invisibility removal task for " + player.getName() + " in " + (INVISIBILITY_DURATION_TICKS / 20) + " seconds");
         plugin.getServer().getGlobalRegionScheduler().runDelayed(plugin, scheduledTask -> {
-            logger.info("Removing darkness gem effect from " + player.getName());
+            LogUtil.verbose("Removing darkness gem effect from " + player.getName());
             playerHideTask.cancel();
             player.removePotionEffect(PotionEffectType.INVISIBILITY);
             showPlayerEquipment(player);
@@ -196,7 +195,7 @@ public class AbilityManager {
 
     private static void showPlayerEquipment(Player player) {
         player.setVisualFire(TriState.NOT_SET);
-        logger.info("Restoring equipment visibility for " + player.getName());
+        LogUtil.verbose("Restoring equipment visibility for " + player.getName());
         for (Player p : Bukkit.getOnlinePlayers()) {
             if (p.isOnline() && !p.equals(player)) {
                 p.sendEquipmentChange(player, EquipmentSlot.HAND, player.getInventory().getItemInMainHand());
@@ -227,26 +226,26 @@ public class AbilityManager {
      * @param player The player using the Earth Gem ability
      */
     public static void handleEarthGemAbility(Player player) {
-        logger.info("Player " + player.getName() + " attempting to use Earth Gem ability");
+        LogUtil.verbose("Player " + player.getName() + " attempting to use Earth Gem ability");
         if (isAbilityOnCooldown(player, GemType.EARTH, "Damage Resistance")) {
             return;
         }
 
         // Apply maximum resistance effect for invulnerability
-        logger.info("Applying invulnerability effect to " + player.getName() + " for " + (INVULNERABILITY_DURATION_TICKS / 20) + " seconds");
+        LogUtil.verbose("Applying invulnerability effect to " + player.getName() + " for " + (INVULNERABILITY_DURATION_TICKS / 20) + " seconds");
         player.getScheduler().run(plugin, scheduledTask -> {
             player.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE, INVULNERABILITY_DURATION_TICKS, 254, false, true, true));
-            logger.info("Resistance effect level 255 applied to " + player.getName());
+            LogUtil.verbose("Resistance effect level 255 applied to " + player.getName());
         }, null);
 
         // Set cooldown for Earth Gem usage
         cooldownManager.setCooldown(player, GemType.EARTH, EARTH_COOLDOWN_MILLIS, true);
-        logger.info("Set Earth Gem cooldown for " + player.getName() + " for " + (EARTH_COOLDOWN_MILLIS / 1000) + " seconds");
+        LogUtil.verbose("Set Earth Gem cooldown for " + player.getName() + " for " + (EARTH_COOLDOWN_MILLIS / 1000) + " seconds");
 
         // Provide feedback to the player
         player.getWorld().playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f);
         player.sendMessage(Component.text(String.format("You are now invulnerable for %d seconds!", INVULNERABILITY_DURATION_TICKS / 20), TextColor.fromHexString("#3ad422")));
-        logger.info("Earth Gem ability successfully activated for " + player.getName());
+        LogUtil.verbose("Earth Gem ability successfully activated for " + player.getName());
     }
 
 
@@ -264,7 +263,7 @@ public class AbilityManager {
      * @param player The player using the Fire Gem ability
      */
     public static void handleFireGemAbility(Player player) {
-        logger.info("Player " + player.getName() + " attempting to use Fire Gem ability");
+        LogUtil.verbose("Player " + player.getName() + " attempting to use Fire Gem ability");
         if (isAbilityOnCooldown(player, GemType.FIRE, "Fireball")) {
             return;
         }
@@ -275,16 +274,16 @@ public class AbilityManager {
         Fireball fireball = player.launchProjectile(Fireball.class, velocity);
         fireball.setIsIncendiary(true);
         fireball.setYield(6F); // Explosion power (6 is quite powerful)
-        logger.info("Launched fireball from " + player.getName() + " with velocity " + velocity + " and yield 6.0");
+        LogUtil.verbose("Launched fireball from " + player.getName() + " with velocity " + velocity + " and yield 6.0");
 
         // Set cooldown for Fire Gem usage
         cooldownManager.setCooldown(player, GemType.FIRE, FIREBALL_COOLDOWN_MILLIS, true);
-        logger.info("Set Fire Gem cooldown for " + player.getName() + " for " + (FIREBALL_COOLDOWN_MILLIS / 1000) + " seconds");
+        LogUtil.verbose("Set Fire Gem cooldown for " + player.getName() + " for " + (FIREBALL_COOLDOWN_MILLIS / 1000) + " seconds");
 
         // Provide feedback to the player
         player.getWorld().playSound(player.getLocation(), Sound.ENTITY_BLAZE_SHOOT, 1.0f, 1.0f);
         player.sendMessage(Component.text("You threw a Fireball!").color(TextColor.fromHexString("#f0590e")));
-        logger.info("Fire Gem ability successfully activated for " + player.getName());
+        LogUtil.verbose("Fire Gem ability successfully activated for " + player.getName());
     }
 
 
@@ -305,7 +304,7 @@ public class AbilityManager {
      * @param player The player using the Light Gem ability
      */
     public static void handleLightGemAbility(Player player) {
-        logger.info("Player " + player.getName() + " attempting to use Light Gem ability");
+        LogUtil.verbose("Player " + player.getName() + " attempting to use Light Gem ability");
         if (isAbilityOnCooldown(player, GemType.LIGHT, "Light Gem")) {
             return;
         }
@@ -313,14 +312,14 @@ public class AbilityManager {
         // Check if the player has a target
         if (!(player.getTargetEntity(120) instanceof LivingEntity targetEntity)) {
             player.sendMessage(Component.text("You must be looking at another player/mob to use the Light Gem!", NamedTextColor.RED));
-            logger.info("No valid target found for " + player.getName() + " to use Light Gem");
+            LogUtil.verbose("No valid target found for " + player.getName() + " to use Light Gem");
             return;
         }
 
-        logger.info("Player " + player.getName() + " targeting entity " + targetEntity.getName() + " with Light Gem");
+        LogUtil.verbose("Player " + player.getName() + " targeting entity " + targetEntity.getName() + " with Light Gem");
 
         //Strike the targeted player with lightning multiple times over a short duration
-        logger.info("Striking " + targetEntity.getName() + " with lightning bolts");
+        LogUtil.verbose("Striking " + targetEntity.getName() + " with lightning bolts");
 
         // Strike the target player with lightning and apply damage
         targetEntity.damage(60, player); // Damage the target entity with 60 health points (30 hearts)
@@ -328,7 +327,7 @@ public class AbilityManager {
 
         // Set cooldown for Light Gem usage
         cooldownManager.setCooldown(player, GemType.LIGHT, LIGHT_COOLDOWN_MILLIS, true);
-        logger.info("Set Light Gem cooldown for " + player.getName() + " for " + (LIGHT_COOLDOWN_MILLIS / 1000) + " seconds");
+        LogUtil.verbose("Set Light Gem cooldown for " + player.getName() + " for " + (LIGHT_COOLDOWN_MILLIS / 1000) + " seconds");
 
         // Provide feedback to the player
         player.sendMessage(Component.text()
@@ -336,7 +335,7 @@ public class AbilityManager {
                     .append(Component.text(targetEntity.getName(), NamedTextColor.GREEN))
                     .append(Component.text(" with lightning!", TextColor.fromHexString("#ffef4f")))
                 );
-        logger.info("Light Gem ability successfully used by " + player.getName() + " on " + targetEntity.getName());
+        LogUtil.verbose("Light Gem ability successfully used by " + player.getName() + " on " + targetEntity.getName());
     }
 
 
@@ -357,7 +356,7 @@ public class AbilityManager {
      * @param player The player using the Water Gem ability
      */
     public static void handleWaterGemAbility(Player player) {
-        logger.info("Player " + player.getName() + " attempting to use Water Gem ability");
+        LogUtil.verbose("Player " + player.getName() + " attempting to use Water Gem ability");
         if (isAbilityOnCooldown(player, GemType.WATER, "Water Gem")) {
             return;
         }
@@ -365,14 +364,14 @@ public class AbilityManager {
         // Find a valid target
         if (!(player.getTargetEntity(120) instanceof LivingEntity targetEntity)) {
             player.sendMessage(Component.text("You must be looking at another player/mob to use the Water Gem!", NamedTextColor.RED));
-            logger.info("No valid target found for " + player.getName() + " to use Water Gem");
+            LogUtil.verbose("No valid target found for " + player.getName() + " to use Water Gem");
             return;
         }
-        logger.info("Player " + player.getName() + " targeting entity " + targetEntity.getName() + " with Water Gem");
+        LogUtil.verbose("Player " + player.getName() + " targeting entity " + targetEntity.getName() + " with Water Gem");
 
         // Set cooldown immediately
         cooldownManager.setCooldown(player, GemType.WATER, WATER_COOLDOWN_MILLIS, true);
-        logger.info("Set Water Gem cooldown for " + player.getName() + " for " + (WATER_COOLDOWN_MILLIS / 1000) + " seconds");
+        LogUtil.verbose("Set Water Gem cooldown for " + player.getName() + " for " + (WATER_COOLDOWN_MILLIS / 1000) + " seconds");
 
         // Schedule all targetEntity operations on its region thread for safety
         targetEntity.getScheduler().run(plugin, scheduledTask -> {
@@ -389,7 +388,7 @@ public class AbilityManager {
                 if (freezeTask != null) {
                     freezeTask.cancel();
                 }
-                logger.info("Unfroze entity " + targetName);
+                LogUtil.verbose("Unfroze entity " + targetName);
             }, null, WATER_FREEZE_DURATION_TICKS);
 
             // Play sound and notify target
@@ -401,7 +400,7 @@ public class AbilityManager {
                         .append(Component.text(" for " + (WATER_FREEZE_DURATION_TICKS / 20) + " seconds!", NamedTextColor.BLUE))
                 );
             }
-            logger.info("Froze entity " + targetName);
+            LogUtil.verbose("Froze entity " + targetName);
 
             // Notify the caster (run on main thread for safety, though not strictly necessary)
             Bukkit.getGlobalRegionScheduler().run(plugin, t -> {
